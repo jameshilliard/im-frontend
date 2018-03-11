@@ -100,7 +100,12 @@ class Poolspage extends Component {
           if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
               deleteStorage("jwt");
               comp.setState({"redirectToLogin":true});
+          } else {
+            comp.setState({
+              isLoaded: true
+            });
           }
+
         }
       });
 
@@ -110,7 +115,7 @@ class Poolspage extends Component {
   }
 
   handleInputChange(event) {
-   var { pools,fieldsValidation,isLoaded,showAlert,updatingPools,redirectToIndex } = this.state;
+   var { pools } = this.state;
 
    const target = event.target;
    const name = target.name;
@@ -234,7 +239,7 @@ class Poolspage extends Component {
               var strSend = generateUrlEncoded(postPools);
 
               var comp=this;
-              comp.setState({poolsUpdated:true});
+              comp.setState({updatingPools:true});
 
               axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePools, strSend)
               .then(function (response) {
@@ -244,7 +249,7 @@ class Poolspage extends Component {
                       comp.setState({redirectToIndex:true});
                     }, 5000);
                 } else if(response.data.success === true) {
-                  comp.setState({errorUpdating:true,updatingPools:true});
+                  comp.setState({errorUpdating:true,updatingPools:false});
                 }
               })
               .catch(function (error) {

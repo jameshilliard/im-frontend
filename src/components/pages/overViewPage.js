@@ -113,10 +113,10 @@ class OverViewpage extends Component {
                                 <span className="field-title">Platform Version</span>
                             </div>
                             <div className="col-md-6 field-value">
-                                <small>{version.platform_v}</small>
+                                {version.platform_v}
                             </div>
                         </div>
-                    
+
                     </div>
 
                  </div>

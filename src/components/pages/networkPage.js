@@ -35,6 +35,7 @@ class Networkpage extends Component {
 
   componentDidMount() {
 
+    var page=this;
     var token=getStorage("jwt");
     if (token===null) {
       this.setState({"redirectToLogin":true});
@@ -47,15 +48,16 @@ class Networkpage extends Component {
               "ipaddress":res.data.ipaddress,
               "netmask":res.data.netmask,
               "gateway":res.data.gateway,
-              "dns1":res.data.dns[0],
-              "dns2":res.data.dns[1],
+              "dns1":res.data.dns1,
+              "dns2":res.data.dns2,
               "dhcp":res.data.dhcp};
 
-              this.setState({fields:fields,isLoaded:true});
+
+              page.setState({fields:fields,isLoaded:true});
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
-                this.setState({"redirectToLogin":true});
+                page.setState({"redirectToLogin":true});
             }
           }
 
@@ -69,7 +71,6 @@ class Networkpage extends Component {
 
   validateForm() {
     var { fields,fieldsValidation,isLoaded,updatingNetwork,alert } = this.state;
-
 
     if (fields.dhcp!=="dhcp") {
       fieldsValidation.ipaddress=isValidIP(fields.ipaddress);
@@ -157,6 +158,7 @@ class Networkpage extends Component {
    } else {
      fields[name]=value;
    }
+
    this.setState({"fields":fields,"fieldsValidation":fieldsValidation,"isLoaded":isLoaded,"updatingNetwork":updatingNetwork,alert:alert});
   }
 

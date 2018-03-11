@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import {generateUrlEncoded} from '../lib/utils'
+import {generateUrlEncoded,getStorage,deleteStorage} from '../lib/utils'
 
 
 class Upgradepage extends Component {
@@ -15,6 +15,7 @@ class Upgradepage extends Component {
         "upgrading":false,
         "keepSettings":1,
         "errorMessage":"",
+        upgraded:false,
         upgradePercent:0,
         upgradeMessage:"",
         redirectToIndex:false
@@ -29,23 +30,38 @@ class Upgradepage extends Component {
 
     event.preventDefault();
       if (!upgrading) {
-        if (this.fileInput.files[0]==null||this.fileInput.files[0].name.split('.').pop()!="bin"||(this.fileInput.files[0].size / Math.pow(1024,2)).toFixed(2) > 100) {
+        if (this.fileInput.files[0]==null||this.fileInput.files[0].name.split('.').pop()!="swu"||(this.fileInput.files[0].size / Math.pow(1024,2)).toFixed(2) > 100) {
           this.setState({errorMessage:"Please insert a valid firmware file."})
         } else {
-          this.setState({upgrading:true,errorMessage:""})
 
-          var fd = new FormData();
-          var comp=this;
-          fd.append("keepsettings", this.state.keepSettings);
-          fd.append("upfile", this.fileInput.files[0]);
-          axios.post(window.customVars.urlPrefix+'/../cgi-bin/upload.py', fd)
-          .then(function (response) {
+          var token=getStorage("jwt");
+          if (token===null) {
+            this.setState({"redirectToLogin":true});
+          } else {
+            this.setState({upgrading:true,errorMessage:""});
+            var fd = new FormData();
+            var comp=this;
+            fd.append("keepsettings", this.state.keepSettings);
+            fd.append("upfile", this.fileInput.files[0]);
+            fd.append("jwt",token);
+            axios.post(window.customVars.urlPrefix+window.customVars.apiUpgrade, fd)
+            .then(function (res) {
+                if (res.data.success === true) {
+                  this.setState({upgrading:false,errorMessage:"",upgraded:true})
+                } else {
+                  if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+                      deleteStorage("jwt");
+                      comp.setState({"redirectToLogin":true});
+                  } else if (typeof res.data.message !== 'undefined'){
+                      comp.setState({upgrading:false,errorMessage:res.data.message})
+                  }
+                }
+            })
+            .catch(function (error) {
 
-          })
-          .catch(function (error) {
-
-          });
-          comp.getPercentProccess();
+            });
+          }
+          //comp.getPercentProccess();
 
         }
       }
@@ -79,7 +95,7 @@ class Upgradepage extends Component {
   }
 
   render() {
-    const { upgrading,errorMessage,keepSettings,upgradePercent,upgradeMessage } = this.state;
+    const { upgrading,errorMessage,keepSettings,upgradePercent,upgradeMessage,upgraded } = this.state;
 
     return (
       <div className="Upgradepage">
@@ -96,50 +112,62 @@ class Upgradepage extends Component {
                </div>
                    <div className="box-body p-4">
 
-
-                       <ol className="text-normal">
-                       <li>The update.bin file should be obtained from the support center</li>
-                       <li>Check the "Keep User Settings" option if you want to retain your configuration.</li>
-                       <li>Do not power off or refresh this page during the upgrade process.</li>
-                       <li>After the upgrade process is completed, the system will reboot automatically, if not please reboot it manually.</li>
-
-                       </ol>
-
-                       {!upgrading &&
+                       {!upgraded &&
                        <div>
+                           <ol className="text-normal">
+                           <li>The update.bin file should be obtained from the support center</li>
+                           <li>Check the "Keep User Settings" option if you want to retain your configuration.</li>
+                           <li>Do not power off or refresh this page during the upgrade process.</li>
+                           <li>After the upgrade process is completed, the system will reboot automatically, if not please reboot it manually.</li>
 
-                         <div className="form-group row">
-                             <label htmlFor="inputKeepSettings" className="col-sm-3 col-form-label">Keep User Settings</label>
-                             <div className="col-sm-9">
-                                 <input name="keepSettings" onChange={this.handleInputChange} type="checkbox" checked={keepSettings=="1"} id="inputKeepSettings" /> &nbsp;&nbsp;
-                                 <small>Please check this box if you want to preserve all you configurations after the upgrade process.</small>
+                           </ol>
+
+                           {!upgrading &&
+                           <div>
+
+                             <div className="form-group row">
+                                 <label htmlFor="inputKeepSettings" className="col-sm-3 col-form-label">Keep User Settings</label>
+                                 <div className="col-sm-9">
+                                     <input name="keepSettings" onChange={this.handleInputChange} type="checkbox" checked={keepSettings=="1"} id="inputKeepSettings" /> &nbsp;&nbsp;
+                                     <small>Please check this box if you want to preserve all you configurations after the upgrade process.</small>
+                                 </div>
                              </div>
-                         </div>
-                         <div className="form-group row">
-                             <label htmlFor="inputImage" className="col-sm-3 col-form-label">Image</label>
-                             <div className="col-sm-9">
-                                 <input ref={input => {this.fileInput = input;}} type="file" className="form-control-sm" id="inputImage" placeholder="Upload Firmware" />
+                             <div className="form-group row">
+                                 <label htmlFor="inputImage" className="col-sm-3 col-form-label">Image</label>
+                                 <div className="col-sm-9">
+                                     <input ref={input => {this.fileInput = input;}} type="file" className="form-control-sm" id="inputImage" placeholder="Upload Firmware" />
+                                 </div>
                              </div>
-                         </div>
-                       </div>
-                       }
-
-                       {errorMessage!=="" &&
-                       <div className="alert alert-warning">
-                         {errorMessage}
-                       </div>
-                       }
-
-                       {upgrading &&
-                         <div>
-                           <h3>Upgrade process</h3>
-                           <div className="progress">
-                              <div className="progress-bar" role="progressbar" style={{width: upgradePercent + "%"}} aria-valuenow={upgradePercent} aria-valuemin="0" aria-valuemax="100">{upgradePercent}%</div>
-
                            </div>
-                           <small>{upgradeMessage}</small>
-                         </div>
-                       }
+                           }
+
+                           {errorMessage!=="" &&
+                           <div className="alert alert-warning">
+                             {errorMessage}
+                           </div>
+                           }
+
+                           {upgrading &&
+                             <div>
+                               <h3>Upgrade process</h3>
+                               <div className="progress">
+                                  <div className="progress-bar" role="progressbar" style={{width: upgradePercent + "%"}} aria-valuenow={upgradePercent} aria-valuemin="0" aria-valuemax="100">{upgradePercent}%</div>
+
+                               </div>
+                               <small>{upgradeMessage}</small>
+                             </div>
+                           }
+                        </div>
+                        }
+                        {upgraded &&
+                        <div>
+                          <div className="alert alert-success">
+                            Firmware updated successfully, please proceed to reboot the miner.
+                          </div>
+
+                          <p>eboot btn here</p>
+                        </div>
+                        }
 
                    </div>
                    <div className="box-footer">
