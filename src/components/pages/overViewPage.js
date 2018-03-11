@@ -13,7 +13,6 @@ class OverViewpage extends Component {
       version:["build_date": "",
         "ethaddr": "",
         "hwver": "",
-        "rootfs_v": "",
         "platform_v": ""],
       network: ["dns1","",
         "dns2": "",
@@ -117,14 +116,7 @@ class OverViewpage extends Component {
                                 <small>{version.platform_v}</small>
                             </div>
                         </div>
-                        <div className="row mt-3">
-                            <div className="col-md-6">
-                                <span className="field-title">Root FS Version</span>
-                            </div>
-                            <div className="col-md-6 field-value">
-                                <small>{version.rootfs_v}</small>
-                            </div>
-                        </div>
+                    
                     </div>
 
                  </div>

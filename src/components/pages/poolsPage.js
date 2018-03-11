@@ -15,17 +15,19 @@ class Poolspage extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
 
     this.state = {
-      pools: {
-        "Password1":"",
-        "Password2":"",
-        "Password3":"",
-        "Pool1":"",
-        "Pool2":"",
-        "Pool3":"",
-        "UserName1":"",
-        "UserName2":"",
-        "UserName3":""
-      },
+      pools: [{
+        "url":"",
+        "user":"",
+        "pass":""
+      },{
+        "url":"",
+        "user":"",
+        "pass":""
+      },{
+        "url":"",
+        "user":"",
+        "pass":""
+      }],
       fieldsValidation: {
         "Password1":true,
         "Password2":true,
@@ -44,7 +46,8 @@ class Poolspage extends Component {
       type: "",
       poolsUpdated:false,
       errorUpdating:false,
-      redirectToLogin:false
+      redirectToLogin:false,
+      hasErrors:false
     };
 
 
@@ -59,30 +62,40 @@ class Poolspage extends Component {
     } else {
       var comp=this;
       var strSend = generateUrlEncoded({"jwt":token});
-      axios.post(window.customVars.urlPrefix+window.customVars.apiMinerType,strSend)
+
+
+      axios.post(window.customVars.urlPrefix+window.customVars.apiConfigPools,strSend)
       .then(res => {
         if (res.data.success === true) {
-          comp.setState({
-            type: res.data.type
-          });
-
-          axios.post(window.customVars.urlPrefix+window.customVars.apiConfigPools,strSend)
-          .then(res => {
-            if (res.data.success === true) {
-              if (res.data.pools) {
-                Object.keys(res.data.pools).forEach(function (key) {
-                  if (res.data.pools[key]!==null&&(key==="Pool1"||key==="Pool2"||key==="Pool3"||key==="UserName1"||key==="UserName2"||key==="UserName3"||key==="Password1"||key==="Password2"||key==="Password3")) {
-                    if (res.data.pools["Pool"+key.charAt(key.length-1)]!="")
-                      pools[key]=res.data.pools[key];
-                  }
-                });
-                comp.setState({
-                  pools: pools,
-                  isLoaded: true
-                });
+          if (res.data.pools instanceof Array) {
+            var receivedPools=[];
+            for (var i=0;i<3;i++) {
+            if (res.data.pools[i] !== void 0) {
+              var url="";
+              var user="";
+              var pass="";
+              if (typeof res.data.pools[i].url !== 'undefined') {
+                url=res.data.pools[i].url;
               }
+              if (typeof res.data.pools[i].user !== 'undefined') {
+                user=res.data.pools[i].user;
+              }
+              if (typeof res.data.pools[i].pass !== 'undefined') {
+                pass=res.data.pools[i].pass;
+              }
+              receivedPools[i]={"url":url,"user":user,"pass":pass};
+            } else {
+              receivedPools[i]={"url":"","user":"","pass":""};
             }
-          });
+
+            }
+
+
+            comp.setState({
+              pools: receivedPools,
+              isLoaded: true
+            });
+          }
         } else {
           if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
               deleteStorage("jwt");
@@ -90,6 +103,8 @@ class Poolspage extends Component {
           }
         }
       });
+
+
     }
 
   }
@@ -98,177 +113,153 @@ class Poolspage extends Component {
    var { pools,fieldsValidation,isLoaded,showAlert,updatingPools,redirectToIndex } = this.state;
 
    const target = event.target;
-   const value = target.type === 'checkbox' ? target.checked : target.value;
    const name = target.name;
-   pools[name]=value;
-   switch (name) {
-     case "Pool1":
-       if (value=="") {
-         pools["UserName1"]="";
-         pools["Password1"]="";
-       }
-       if (value!==""&&isUrlValid(value)) {
-         fieldsValidation["Pool1"]=true;
-       } else {
-         fieldsValidation["Pool1"]=false;
-       }
-       if (pools["UserName1"]===""&&pools["Pool1"]!=="") {
-         fieldsValidation["UserName1"]=false;
-       } else {
-         fieldsValidation["UserName1"]=true;
-       }
-       if (pools["Password1"]===""&&pools["Pool1"]!=="") {
-         fieldsValidation["Password1"]=false;
-       } else {
-         fieldsValidation["Password1"]=true;
-       }
+   const pool = target.getAttribute('data-pool');
+   pools[pool][name]=target.value;
 
-       break;
-     case "Pool2":
-       if (value=="") {
-         pools["UserName2"]="";
-         pools["Password2"]="";
-       }
-       if (value===""||isUrlValid(value)) {
-         fieldsValidation["Pool2"]=true;
-       } else {
-         fieldsValidation["Pool2"]=false;
-       }
-       if (pools["UserName2"]===""&&pools["Pool2"]!=="") {
-         fieldsValidation["UserName2"]=false;
-       } else {
-         fieldsValidation["UserName2"]=true;
-       }
-       if (pools["Password2"]===""&&pools["Pool2"]!=="") {
-         fieldsValidation["Password2"]=false;
-       } else {
-         fieldsValidation["Password2"]=true;
-       }
-       break;
-     case "Pool3":
-       if (value=="") {
-         pools["UserName3"]="";
-         pools["Password3"]="";
-       }
-       if (value===""||isUrlValid(value)) {
-         fieldsValidation["Pool3"]=true;
-       } else {
-         fieldsValidation["Pool3"]=false;
-       }
-       if (pools["UserName3"]===""&&pools["Pool3"]!=="") {
-         fieldsValidation["UserName3"]=false;
-       } else {
-         fieldsValidation["UserName3"]=true;
-       }
-       if (pools["Password3"]===""&&pools["Pool3"]!=="") {
-         fieldsValidation["Password3"]=false;
-       } else {
-         fieldsValidation["Password3"]=true;
-       }
-       break;
-      case "UserName1":
-      if (value==="") {
-        fieldsValidation["UserName1"]=false;
-      } else {
-        fieldsValidation["UserName1"]=true;
-      }
-      break;
-      case "UserName2":
-      if (value===""&&pools["Pool2"]!=="") {
-        fieldsValidation["UserName2"]=false;
-      } else {
-        fieldsValidation["UserName2"]=true;
-      }
-      break;
-      case "UserName3":
-      if (value===""&&pools["Pool3"]!=="") {
-        fieldsValidation["UserName3"]=false;
-      } else {
-        fieldsValidation["UserName3"]=true;
-      }
-      break;
-      case "Password1":
-      if (value==="") {
-        fieldsValidation["Password1"]=false;
-      } else {
-        fieldsValidation["Password1"]=true;
-      }
-      break;
-      case "Password2":
-      if (value===""&&pools["Pool2"]!=="") {
-        fieldsValidation["Password2"]=false;
-      } else {
-        fieldsValidation["Password2"]=true;
-      }
-      break;
-      case "Password3":
-      if (value===""&&pools["Pool3"]!=="") {
-        fieldsValidation["Password3"]=false;
-      } else {
-        fieldsValidation["Password3"]=true;
-      }
-      break;
-     default:
-
-   }
-
-   this.setState({pools: pools, fieldsValidation:fieldsValidation, showAlert: false, updatingPools: false, isLoaded: true, redirectToIndex: false});
+   this.setState({pools: pools});
   }
 
   handleSubmit(event) {
-
+    event.preventDefault();
 
 
     var { pools,fieldsValidation,isLoaded,showAlert,updatingPools,redirectToIndex } = this.state;
-    var token=getStorage("jwt");
-    if (token===null) {
-      this.setState({"redirectToLogin":true});
-    } else {
-        if (updatingPools)
-          return;
-        event.preventDefault();
-        var formIsValid=true;
-        Object.keys(fieldsValidation).forEach(function(index)  {
-          if (!fieldsValidation[index]) {
-            formIsValid=false;
-            return;
-          }
-        });
 
-        this.state.showAlert=!formIsValid;
+    fieldsValidation={
+      "Password1":true,
+      "Password2":true,
+      "Password3":true,
+      "Pool1":true,
+      "Pool2":true,
+      "Pool3":true,
+      "UserName1":true,
+      "UserName2":true,
+      "UserName3":true
+    }
+    var hasErrors=false;
+    //Pool 1 is always required
+    if (pools[0].url==""||!isUrlValid(pools[0].url)) {
+      fieldsValidation["Pool1"]=false;
+      hasErrors=true;
+    }
+    if (pools[0].user=="") {
+      fieldsValidation["UserName1"]=false;
+      hasErrors=true;
+    }
+    if (pools[0].pass=="") {
+      fieldsValidation["Password1"]=false;
+      hasErrors=true;
+    }
 
-
-        if (formIsValid) {
-          this.setState({updatingPools:true});
-
-          var postData=pools;
-          postData.jwt=token;
-          var strSend = generateUrlEncoded(postData);
-
-          var comp=this;
-          comp.setState({poolsUpdated:true});
-
-          axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePools, strSend)
-          .then(function (response) {
-            if(response.data.success === true){
-                comp.setState({poolsUpdated:true});
-                setTimeout(() => {
-                  comp.setState({redirectToIndex:true});
-                }, 5000);
-            } else if(response.data.success === true) {
-              comp.setState({errorUpdating:true,updatingPools:false});
-            }
-          })
-          .catch(function (error) {
-            comp.setState({updatingPools:false});
-          });
-        }
+    //Pool 2
+    if (pools[1].url!="") {
+      if (!isUrlValid(pools[1].url)) {
+        fieldsValidation["Pool2"]=false;
+        hasErrors=true;
       }
+      if (pools[1].user=="") {
+        fieldsValidation["UserName2"]=false;
+        hasErrors=true;
+      }
+      if (pools[1].pass=="") {
+        fieldsValidation["Password2"]=false;
+        hasErrors=true;
+      }
+    } else {
+      if (pools[1].user!="") {
+        fieldsValidation["Pool2"]=false;
+        hasErrors=true;
+      }
+      if (pools[1].pass!="") {
+        fieldsValidation["Pool2"]=false;
+        hasErrors=true;
+      }
+    }
+    //Pool 3
+    if (pools[2].url!="") {
+      if (!isUrlValid(pools[2].url)) {
+        fieldsValidation["Pool3"]=false;
+        hasErrors=true;
+      }
+      if (pools[2].user=="") {
+        fieldsValidation["UserName3"]=false;
+        hasErrors=true;
+      }
+      if (pools[2].pass=="") {
+        fieldsValidation["Password3"]=false;
+        hasErrors=true;
+      }
+    }  else {
+      if (pools[2].user!="") {
+        fieldsValidation["Pool3"]=false;
+        hasErrors=true;
+      }
+      if (pools[2].pass!="") {
+        fieldsValidation["Pool3"]=false;
+        hasErrors=true;
+      }
+    }
+
+    if (!hasErrors) {
+        this.setState({hasErrors:false,fieldsValidation:fieldsValidation});
+        var token=getStorage("jwt");
+        if (token===null) {
+          this.setState({"redirectToLogin":true});
+        } else {
+            if (updatingPools)
+              return;
+
+              var postPools=[];
+              for (var i=0;i<3;i++) {
+                if (pools[i].url!=null&&pools[i].url!="") {
+                  postPools["Pool"+(i+1)]=pools[i].url;
+                } else {
+                  postPools["Pool"+(i+1)]="";
+                }
+                if (pools[i].user!=null&&pools[i].user!="") {
+                  postPools["UserName"+(i+1)]=pools[i].user;
+                } else {
+                  postPools["UserName"+(i+1)]="";
+                }
+                if (pools[i].pass!=null&&pools[i].pass!="") {
+                  postPools["Password"+(i+1)]=pools[i].pass;
+                } else {
+                  postPools["Password"+(i+1)]="";
+                }
+
+              }
+
+              postPools.jwt=token;
+              var strSend = generateUrlEncoded(postPools);
+
+              var comp=this;
+              comp.setState({poolsUpdated:true});
+
+              axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePools, strSend)
+              .then(function (response) {
+                if(response.data.success === true){
+                    comp.setState({poolsUpdated:true});
+                    setTimeout(() => {
+                      comp.setState({redirectToIndex:true});
+                    }, 5000);
+                } else if(response.data.success === true) {
+                  comp.setState({errorUpdating:true,updatingPools:true});
+                }
+              })
+              .catch(function (error) {
+                comp.setState({updatingPools:false});
+              });
+
+          }
+        } else {
+            this.setState({hasErrors:true,fieldsValidation:fieldsValidation});
+        }
   }
 
 
   render() {
-    const { pools,fieldsValidation,isLoaded,showAlert,updatingPools,redirectToIndex,type,poolsUpdated,errorUpdating,redirectToLogin } = this.state;
+    const { pools,fieldsValidation,isLoaded,showAlert,updatingPools,redirectToIndex,type,poolsUpdated,errorUpdating,redirectToLogin,hasErrors } = this.state;
     if (redirectToIndex) {
       return <Redirect to="/?restarting" />;
     }
@@ -283,33 +274,7 @@ class Poolspage extends Component {
         isAdmin=true;
     }
 
-    var poolsFields=[];
-    if (type!="") {
-      if (type==16) {
-        poolsFields[0]=(
-          <select name="Pool1" defaultValue={pools.Pool1} className="form-control form-control-sm" onChange={this.handleInputChange} id="inputURL1">
-            <option value="stratum+tcp://dbg.stratum.slushpool.com:3336">stratum+tcp://dbg.stratum.slushpool.com:3336</option>
-            <option value="stratum+tcp://dbg.stratum.myrig.com:3333">stratum+tcp://dbg.stratum.myrig.com:3333</option>
-          </select>);
-          poolsFields[1]=(
-            <select name="Pool2" defaultValue={pools.Pool2}  className="form-control form-control-sm" onChange={this.handleInputChange} id="inputURL2">
-              <option value="">None</option>
-              <option value="stratum+tcp://dbg.stratum.slushpool.com:3336">stratum+tcp://dbg.stratum.slushpool.com:3336</option>
-              <option value="stratum+tcp://dbg.stratum.myrig.com:3333">stratum+tcp://dbg.stratum.myrig.com:3333</option>
-            </select>);
-            poolsFields[2]=(
-              <select name="Pool3" defaultValue={pools.Pool3}  className="form-control form-control-sm" onChange={this.handleInputChange} id="inputURL3">
-                <option value="">None</option>
-                <option value="stratum+tcp://dbg.stratum.slushpool.com:3336">stratum+tcp://dbg.stratum.slushpool.com:3336</option>
-                <option value="stratum+tcp://dbg.stratum.myrig.com:3333">stratum+tcp://dbg.stratum.myrig.com:3333</option>
-              </select>);
-      } else {
-          poolsFields[0]=<input type="text" className="form-control form-control-sm"  name="Pool1" value={this.state.pools.Pool1} onChange={this.handleInputChange} id="inputURL1" placeholder="Pool URL" />;
-          poolsFields[1]=<input type="text" className="form-control form-control-sm"  name="Pool2" value={this.state.pools.Pool2} onChange={this.handleInputChange} id="inputURL2" placeholder="Pool URL" />;
-          poolsFields[2]=<input type="text" className="form-control form-control-sm"  name="Pool3" value={this.state.pools.Pool3} onChange={this.handleInputChange} id="inputURL3" placeholder="Pool URL" />;
 
-      }
-    }
     return (
       <div className="Poolspage">
 
@@ -327,6 +292,12 @@ class Poolspage extends Component {
             </div>
           }
 
+          {hasErrors &&
+            <div className="alert alert-warning mt-5">
+              Some fields in your form are invalid, please check the fields highlighted in red.
+            </div>
+          }
+
           <div className="row">
               {/* Box Pool 1 */}
              <div className="col-md-12 mt-5">
@@ -339,9 +310,7 @@ class Poolspage extends Component {
                         <div className={"form-group " + (!fieldsValidation.Pool1 && "has-error")}>
                           <label htmlFor="inputURL1">URL</label>
                             <div className="input-group mb-2">
-
-                              {/* <input type="text" className="form-control form-control-sm"  name="Pool1" value={this.state.pools.Pool1} onChange={this.handleInputChange} id="inputURL1" placeholder="Pool URL" /> */}
-                              {poolsFields[0]}
+                              <input type="text" className="form-control form-control-sm"  data-pool="0" name="url" value={this.state.pools[0].url} onChange={this.handleInputChange} id="inputURL1" placeholder="Pool URL" />
                             </div>
                         </div>
                         <div className={"form-group " + (!fieldsValidation.UserName1 && "has-error")}>
@@ -350,7 +319,7 @@ class Poolspage extends Component {
                                 <div className="input-group-prepend">
                                     <div className="input-group-text"><i className="fa fa-user"></i></div>
                                 </div>
-                                <input type="text" className="form-control form-control-sm"  name="UserName1" value={this.state.pools.UserName1} onChange={this.handleInputChange} id="inputWorker1" placeholder="Pool Worker" />
+                                <input type="text" className="form-control form-control-sm"  data-pool="0" name="user"  value={this.state.pools[0].user} onChange={this.handleInputChange} id="inputWorker1" placeholder="Pool Worker" />
                             </div>
                         </div>
                         <div className={"form-group " + (!fieldsValidation.Password1 && "has-error")}>
@@ -359,7 +328,7 @@ class Poolspage extends Component {
                                 <div className="input-group-prepend">
                                     <div className="input-group-text"><i className="fa fa-lock"></i></div>
                                 </div>
-                                <input type="text" className="form-control form-control-sm"  name="Password1" value={this.state.pools.Password1} onChange={this.handleInputChange} id="inputPassword1" placeholder="Pool Password" />
+                                <input type="text" className="form-control form-control-sm"  data-pool="0" name="pass" value={this.state.pools[0].pass} onChange={this.handleInputChange} id="inputPassword1" placeholder="Pool Password" />
                             </div>
                         </div>
                      </div>
@@ -382,7 +351,7 @@ class Poolspage extends Component {
                           <div className={"form-group " + (!fieldsValidation.Pool2 && "has-error")}>
                               <label htmlFor="inputURL2">URL</label>
                               <div className="input-group mb-2">
-                                  {poolsFields[1]}
+                                  <input type="text" className="form-control form-control-sm"  data-pool="1" name="url" value={this.state.pools[1].url} onChange={this.handleInputChange} id="inputURL2" placeholder="Pool URL" />
                               </div>
                           </div>
                           <div className={"form-group " + (!fieldsValidation.UserName2 && "has-error")}>
@@ -391,7 +360,7 @@ class Poolspage extends Component {
                                   <div className="input-group-prepend">
                                       <div className="input-group-text"><i className="fa fa-user"></i></div>
                                   </div>
-                                  <input type="text" className="form-control form-control-sm"  name="UserName2" value={this.state.pools.UserName2} onChange={this.handleInputChange} id="inputWorker2" placeholder="Pool Worker" />
+                                  <input type="text" className="form-control form-control-sm"  data-pool="1" name="user" value={this.state.pools[1].user} onChange={this.handleInputChange} id="inputWorker2" placeholder="Pool Worker" />
                               </div>
                           </div>
                           <div className={"form-group " + (!fieldsValidation.Password2 && "has-error")}>
@@ -400,7 +369,7 @@ class Poolspage extends Component {
                                   <div className="input-group-prepend">
                                       <div className="input-group-text"><i className="fa fa-lock"></i></div>
                                   </div>
-                                  <input type="text" className="form-control form-control-sm"  name="Password2" value={this.state.pools.Password2} onChange={this.handleInputChange} id="inputPassword2" placeholder="Pool Password" />
+                                  <input type="text" className="form-control form-control-sm"  data-pool="1" name="pass" value={this.state.pools[1].pass} onChange={this.handleInputChange} id="inputPassword2" placeholder="Pool Password" />
                               </div>
                           </div>
                       </div>
@@ -424,7 +393,7 @@ class Poolspage extends Component {
                           <div className={"form-group " + (!fieldsValidation.Pool3 && "has-error")}>
                               <label htmlFor="inputURL3">URL</label>
                               <div className="input-group mb-2">
-                                  {poolsFields[2]}
+                                  <input type="text" className="form-control form-control-sm"  data-pool="2" name="url" value={this.state.pools[2].url} onChange={this.handleInputChange} id="inputURL3" placeholder="Pool URL" />
                               </div>
                           </div>
                           <div className={"form-group " + (!fieldsValidation.UserName3 && "has-error")}>
@@ -433,7 +402,7 @@ class Poolspage extends Component {
                                   <div className="input-group-prepend">
                                       <div className="input-group-text"><i className="fa fa-user"></i></div>
                                   </div>
-                                  <input type="text" className="form-control form-control-sm"  name="UserName3" value={this.state.pools.UserName3} onChange={this.handleInputChange} id="inputWorker3" placeholder="Pool Worker" />
+                                  <input type="text" className="form-control form-control-sm"  data-pool="2" name="user" value={this.state.pools[2].user} onChange={this.handleInputChange} id="inputWorker3" placeholder="Pool Worker" />
                               </div>
                           </div>
                           <div className={"form-group " + (!fieldsValidation.Password3 && "has-error")}>
@@ -442,7 +411,7 @@ class Poolspage extends Component {
                                   <div className="input-group-prepend">
                                       <div className="input-group-text"><i className="fa fa-lock"></i></div>
                                   </div>
-                                  <input type="text" className="form-control form-control-sm"  name="Password3" value={this.state.pools.Password3} onChange={this.handleInputChange} id="inputPassword3" placeholder="Pool Password" />
+                                  <input type="text" className="form-control form-control-sm"  data-pool="2" name="pass" value={this.state.pools[2].pass} onChange={this.handleInputChange} id="inputPassword3" placeholder="Pool Password" />
                               </div>
                           </div>
                       </div>
@@ -458,7 +427,6 @@ class Poolspage extends Component {
           {/* ./row */}
 
           <div className="row mt-5">
-
 
               {isAdmin &&
               <div className="col-md-12 text-center">

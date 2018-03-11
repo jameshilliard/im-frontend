@@ -24,18 +24,18 @@ class App extends Component {
 
   componentWillMount() {
     window.customVars = {
-        urlPrefix: "",
-        apiDevsPools: "/index.php?/api/summary",
-        apiConfigPools: "/index.php?/api/pools",
-        apiMinerType: "/index.php?/api/type",
-        apiUpdatePools: "/index.php?/api/updatePools",
-        apiLogin: "/index.php?/api/auth",
-        apiUpdatePassword: "/index.php?/api/updatePassword",
-        apiNetwork: "/index.php?/api/network",
-        apiUpdateNetwork: "/index.php?/api/updateNetwork",
-        apiPing: "/index.php?/api/ping",
-        apiReboot: "/index.php?/api/reboot",
-        apiOverview: "/index.php?/api/overview"
+        urlPrefix: "http://192.168.0.3/",
+        apiDevsPools: "/api/summary",
+        apiConfigPools: "/api/pools",
+        apiMinerType: "/api/type",
+        apiUpdatePools: "/api/updatePools",
+        apiLogin: "/api/auth",
+        apiUpdatePassword: "/api/updatePassword",
+        apiNetwork: "/api/network",
+        apiUpdateNetwork: "/api/updateNetwork",
+        apiPing: "/api/ping",
+        apiReboot: "/api/reboot",
+        apiOverview: "/api/overview"
     };
   }
 
