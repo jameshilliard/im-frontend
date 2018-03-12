@@ -47,15 +47,20 @@ class Securitypage extends Component {
             if (alertMessage==="") {
 
 
-              var strSend = generateUrlEncoded({"jwt":token,"user":user,"currentPassword":currentPassword,"newPassword":newPassword});
+              var strSend = generateUrlEncoded({"user":user,"currentPassword":currentPassword,"newPassword":newPassword});
 
               this.refs.currentPassword.value="";
               this.refs.newPassword.value="";
               this.refs.confirmPassword.value="";
               var comp=this;
 
-
-              axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePassword,strSend)
+              
+              let axiosConfig = {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+              };
+              axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePassword,strSend,axiosConfig)
               .then(res => {
                 if (res.data.success==true) {
                   comp.setState({"alertMessage":alertMessage,updatedPassword:true,"updatingPassword":false});

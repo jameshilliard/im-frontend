@@ -22,14 +22,22 @@ class Rebootpage extends Component {
 
 
   handleSubmit(event) {
+    event.preventDefault();
     var token=getStorage("jwt");
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
       this.setState({"rebooting":true});
-      event.preventDefault();
-      var strSend = generateUrlEncoded({"jwt":token});
-      axios.post(window.customVars.urlPrefix+window.customVars.apiReboot,strSend)
+
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiReboot,postData,axiosConfig)
       .then(res => {
           if (res.data.success==false&&(typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
               deleteStorage("jwt");

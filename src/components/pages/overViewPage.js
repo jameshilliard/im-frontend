@@ -42,9 +42,17 @@ class OverViewpage extends Component {
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-      var strSend = generateUrlEncoded({"jwt":token});
-      axios.post(window.customVars.urlPrefix+window.customVars.apiOverview,strSend)
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiOverview,postData,axiosConfig)
       .then(function (response) {
+        if (response.data.success==true)
         comp.setState({"type":response.data.type,"hardware":response.data.hardware,"version":response.data.version,"network":response.data.network,"isLoaded":true})
       })
       .catch(function (error) {

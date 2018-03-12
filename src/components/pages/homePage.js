@@ -51,8 +51,15 @@ class Homepage extends Component {
     } else {
       var accepted=0,rejected=0,hwErrors=0,mHs=0,upTime=0,fansSpeed=0;
       var page=this;
-      var strSend = generateUrlEncoded({"jwt":token});
-      axios.post(window.customVars.urlPrefix+window.customVars.apiDevsPools,strSend)
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiDevsPools,postData,axiosConfig)
 
       .then(res => {
 

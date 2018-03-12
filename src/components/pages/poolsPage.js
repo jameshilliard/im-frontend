@@ -61,10 +61,15 @@ class Poolspage extends Component {
       this.setState({"redirectToLogin":true});
     } else {
       var comp=this;
-      var strSend = generateUrlEncoded({"jwt":token});
+      var postData = {
 
-
-      axios.post(window.customVars.urlPrefix+window.customVars.apiConfigPools,strSend)
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiConfigPools,postData,axiosConfig)
       .then(res => {
         if (res.data.success === true) {
           if (res.data.pools instanceof Array) {
@@ -235,13 +240,17 @@ class Poolspage extends Component {
 
               }
 
-              postPools.jwt=token;
+
               var strSend = generateUrlEncoded(postPools);
 
               var comp=this;
               comp.setState({updatingPools:true});
-
-              axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePools, strSend)
+              let axiosConfig = {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+              };
+              axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePools, strSend,axiosConfig)
               .then(function (response) {
                 if(response.data.success === true){
                     comp.setState({poolsUpdated:true});
@@ -302,6 +311,11 @@ class Poolspage extends Component {
               Some fields in your form are invalid, please check the fields highlighted in red.
             </div>
           }
+
+
+          <div className="alert alert-info mt-5">
+            Please ensure that your pools are compatible with stratum version-rolling extension
+          </div>
 
           <div className="row">
               {/* Box Pool 1 */}
@@ -428,6 +442,7 @@ class Poolspage extends Component {
 
 
 
+
           </div>
           {/* ./row */}
 
@@ -435,6 +450,8 @@ class Poolspage extends Component {
 
               {isAdmin &&
               <div className="col-md-12 text-center">
+            
+              <br />
                     <button ref="btn" disabled={!isLoaded||updatingPools} onClick={this.handleSubmit} className="btn btn-primary">Update Pools {updatingPools && <div className="btn-loader lds-dual-ring"></div>}</button>
                   {showAlert &&
                   <div id="poolsAlert" className="alert alert-warning mt-3">

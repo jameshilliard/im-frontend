@@ -40,8 +40,15 @@ class Networkpage extends Component {
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-        var strSend = generateUrlEncoded({"jwt":token});
-        axios.post(window.customVars.urlPrefix+window.customVars.apiNetwork,strSend)
+        var postData = {
+
+        };
+        let axiosConfig = {
+          headers: {
+              'Authorization': 'Bearer ' + token
+          }
+        };
+        axios.post(window.customVars.urlPrefix+window.customVars.apiNetwork,postData,axiosConfig)
         .then(res => {
           if (res.data.success==true) {
             var fields={
@@ -103,10 +110,15 @@ class Networkpage extends Component {
               }
             });
             strSend=formBody.join("&");
-            strSend+="&jwt="+token;
+
 
             var comp=this;
-            axios.post(window.customVars.urlPrefix+window.customVars.apiUpdateNetwork, strSend)
+            let axiosConfig = {
+              headers: {
+                  'Authorization': 'Bearer ' + token
+              }
+            };
+            axios.post(window.customVars.urlPrefix+window.customVars.apiUpdateNetwork, strSend,axiosConfig)
               .catch(function (error) {
 
               });
@@ -130,6 +142,7 @@ class Networkpage extends Component {
 
   checkNewIp(ip) {
     var comp=this;
+
     axios.get('http://'+ip+'/'+window.customVars.apiPing)
     .then(function (response) {
       window.location="http://"+ip;

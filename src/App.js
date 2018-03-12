@@ -24,7 +24,7 @@ class App extends Component {
 
   componentWillMount() {
     window.customVars = {
-        urlPrefix: "http://10.0.50.58/",
+        urlPrefix: "http://10.0.50.54",
         apiDevsPools: "/api/summary",
         apiConfigPools: "/api/pools",
         apiMinerType: "/api/type",
