@@ -35,27 +35,36 @@ class Networkpage extends Component {
 
   componentDidMount() {
 
+    var page=this;
     var token=getStorage("jwt");
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-        var strSend = generateUrlEncoded({"jwt":token});
-        axios.post(window.customVars.urlPrefix+window.customVars.apiNetwork,strSend)
+        var postData = {
+
+        };
+        let axiosConfig = {
+          headers: {
+              'Authorization': 'Bearer ' + token
+          }
+        };
+        axios.post(window.customVars.urlPrefix+window.customVars.apiNetwork,postData,axiosConfig)
         .then(res => {
           if (res.data.success==true) {
             var fields={
               "ipaddress":res.data.ipaddress,
               "netmask":res.data.netmask,
               "gateway":res.data.gateway,
-              "dns1":res.data.dns[0],
-              "dns2":res.data.dns[1],
+              "dns1":res.data.dns1,
+              "dns2":res.data.dns2,
               "dhcp":res.data.dhcp};
 
-              this.setState({fields:fields,isLoaded:true});
+
+              page.setState({fields:fields,isLoaded:true});
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
-                this.setState({"redirectToLogin":true});
+                page.setState({"redirectToLogin":true});
             }
           }
 
@@ -69,7 +78,6 @@ class Networkpage extends Component {
 
   validateForm() {
     var { fields,fieldsValidation,isLoaded,updatingNetwork,alert } = this.state;
-
 
     if (fields.dhcp!=="dhcp") {
       fieldsValidation.ipaddress=isValidIP(fields.ipaddress);
@@ -102,10 +110,15 @@ class Networkpage extends Component {
               }
             });
             strSend=formBody.join("&");
-            strSend+="&jwt="+token;
+
 
             var comp=this;
-            axios.post(window.customVars.urlPrefix+window.customVars.apiUpdateNetwork, strSend)
+            let axiosConfig = {
+              headers: {
+                  'Authorization': 'Bearer ' + token
+              }
+            };
+            axios.post(window.customVars.urlPrefix+window.customVars.apiUpdateNetwork, strSend,axiosConfig)
               .catch(function (error) {
 
               });
@@ -129,6 +142,7 @@ class Networkpage extends Component {
 
   checkNewIp(ip) {
     var comp=this;
+
     axios.get('http://'+ip+'/'+window.customVars.apiPing)
     .then(function (response) {
       window.location="http://"+ip;
@@ -157,6 +171,7 @@ class Networkpage extends Component {
    } else {
      fields[name]=value;
    }
+
    this.setState({"fields":fields,"fieldsValidation":fieldsValidation,"isLoaded":isLoaded,"updatingNetwork":updatingNetwork,alert:alert});
   }
 

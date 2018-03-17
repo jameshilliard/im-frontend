@@ -13,7 +13,6 @@ class OverViewpage extends Component {
       version:["build_date": "",
         "ethaddr": "",
         "hwver": "",
-        "rootfs_v": "",
         "platform_v": ""],
       network: ["dns1","",
         "dns2": "",
@@ -43,9 +42,17 @@ class OverViewpage extends Component {
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-      var strSend = generateUrlEncoded({"jwt":token});
-      axios.post(window.customVars.urlPrefix+window.customVars.apiOverview,strSend)
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiOverview,postData,axiosConfig)
       .then(function (response) {
+        if (response.data.success==true)
         comp.setState({"type":response.data.type,"hardware":response.data.hardware,"version":response.data.version,"network":response.data.network,"isLoaded":true})
       })
       .catch(function (error) {
@@ -114,17 +121,10 @@ class OverViewpage extends Component {
                                 <span className="field-title">Platform Version</span>
                             </div>
                             <div className="col-md-6 field-value">
-                                <small>{version.platform_v}</small>
+                                {version.platform_v}
                             </div>
                         </div>
-                        <div className="row mt-3">
-                            <div className="col-md-6">
-                                <span className="field-title">Root FS Version</span>
-                            </div>
-                            <div className="col-md-6 field-value">
-                                <small>{version.rootfs_v}</small>
-                            </div>
-                        </div>
+
                     </div>
 
                  </div>

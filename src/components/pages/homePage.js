@@ -51,15 +51,22 @@ class Homepage extends Component {
     } else {
       var accepted=0,rejected=0,hwErrors=0,mHs=0,upTime=0,fansSpeed=0;
       var page=this;
-      var strSend = generateUrlEncoded({"jwt":token});
-      axios.post(window.customVars.urlPrefix+window.customVars.apiDevsPools,strSend)
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiDevsPools,postData,axiosConfig)
 
       .then(res => {
 
         if (res.data.success==true) {
           const chains = res.data.DEVS;
           upTime=chains[0]['Device Elapsed']*1000;
-          fansSpeed=chains[0]['DUTY'];
+          fansSpeed=res.data.HARDWARE["Fan duty"];
           chains.forEach(function(chain)  {
             accepted+=parseInt(chain["Accepted"]);
             rejected+=parseInt(chain["Rejected"]);
@@ -145,7 +152,7 @@ class Homepage extends Component {
                        <tr>
                          <th scope="col">Running Time</th>
                          <th scope="col">Hash Rate</th>
-                         <th scope="col">Accepted Rejected</th>
+                         <th scope="col">Accepted / Rejected</th>
                          <th scope="col">HW</th>
                          <th scope="col">Fan Speed</th>
                        </tr>
@@ -179,7 +186,7 @@ class Homepage extends Component {
                          <th scope="col">User</th>
                          <th scope="col">Status</th>
                          <th scope="col">Get Works</th>
-                         <th scope="col">Accepted Rejected</th>
+                         <th scope="col">Accepted / Rejected</th>
                        </tr>
                      </thead>
                      <tbody id="bodyPools">

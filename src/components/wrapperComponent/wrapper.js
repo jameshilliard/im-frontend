@@ -30,7 +30,8 @@ class Wrapper extends Component {
 
     this.state = {
       skin: skin,
-      user: ""
+      user: "",
+      sidebarClass:""
     };
     this.changeSkin = this.changeSkin.bind(this)
     this.logout = this.logout.bind(this);
@@ -64,8 +65,18 @@ class Wrapper extends Component {
     }
   }
 
+
+  toggleSidenav() {
+      const { sidebarClass } = this.state;
+      if (sidebarClass==="") {
+        this.setState({"sidebarClass":"active"});
+      } else {
+        this.setState({"sidebarClass":""});
+      }
+  }
+
   render() {
-    const { skin } = this.state;
+    const { skin,sidebarClass } = this.state;
     var authenticated=false;
     var token=getStorage("jwt");
     var user=getStorage("userName");
@@ -75,6 +86,9 @@ class Wrapper extends Component {
       if (user=="admin")
         isAdmin=true;
     }
+
+
+
 
     return (
         <Switch>
@@ -86,7 +100,7 @@ class Wrapper extends Component {
           <Route render={() =>
             <div className={"wrapper " + skin}>
                 {/* Sidebar Holder */}
-                <nav id="sidebar">
+                <nav id="sidebar" className={sidebarClass}>
                     <div className="sidebar-header hm-logo">
 
                     </div>
@@ -132,7 +146,7 @@ class Wrapper extends Component {
                               <div className="hm-logo">
 
                               </div>
-                                <button type="button" id="sidebarCollapse" className="btn navbar-btn btn-sm">
+                                <button type="button" id="sidebarCollapse" className="btn navbar-btn btn-sm" onClick={this.toggleSidenav.bind(this)}>
                                     <i className="fa fa-bars"></i>
                                 </button>
                             </div>
