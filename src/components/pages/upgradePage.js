@@ -86,7 +86,7 @@ class Upgradepage extends Component {
   }
 
   handleSubmit(event) {
-    const { upgrading, upgradeMessages,upgradeStatus } = this.state;
+    var { upgrading, upgradeMessages,upgradeStatus } = this.state;
 
     event.preventDefault();
       if (!upgrading) {
@@ -113,7 +113,7 @@ class Upgradepage extends Component {
 
             comp.setState({"upgradeStatus":"IDLE","upgradeStep":"Uploading","upgradeMessages":[],"upgradeDidRun":true});
             var ws = new WebSocket('ws://' + window.location.host + window.location.pathname.replace(/\/[^\/]*$/, '') + window.customVars.apiUpgradeProgress)
-
+            upgradeMessages=[];
 
             ws.onmessage = function (event) {
               var msg = JSON.parse(event.data)
@@ -153,7 +153,7 @@ class Upgradepage extends Component {
                 }
             })
             .catch(function (error) {
-                
+
 
                 if (error.response&&error.response.status == 401) {
                   deleteStorage("jwt");
@@ -312,7 +312,7 @@ class Upgradepage extends Component {
 
                               {upgraded &&
                               <div className="alert alert-success small mt-4">
-                                The firmware has been upgraded, please click in the <strong>Reboot</strong> button to restart the miner.
+                                The firmware has been upgraded, rebooting the miner...
                               </div>
                               }
 
@@ -321,11 +321,7 @@ class Upgradepage extends Component {
 
                    </div>
 
-                   {upgraded &&
-                   <div className="box-footer">
-                       <button disabled={rebooting} className="btn btn-primary" onClick={this.reboot}>Reboot Now {rebooting && <div className="btn-loader lds-dual-ring"></div>}</button>
-                   </div>
-                   }
+
                    {!upgraded &&
                    <div className="box-footer">
                        <button disabled={upgrading} className="btn btn-primary" onClick={this.handleSubmit}>Upgrade Now {upgrading && <div className="btn-loader lds-dual-ring"></div>}</button>
