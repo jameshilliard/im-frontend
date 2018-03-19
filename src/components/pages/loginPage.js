@@ -3,16 +3,25 @@ import axios from 'axios';
 import {generateUrlEncoded} from '../lib/utils'
 import { withRouter,Redirect } from 'react-router-dom';
 import {getStorage,setStorage} from '../lib/utils';
+import queryString from 'query-string';
 
 class Loginpage extends Component {
 
   constructor(props) {
     super(props);
+    var params = queryString.parse(this.props.location.search);
+    var isExpired=false;
+
+    if (params!=null&typeof params["expired"] !== 'undefined') {
+      isExpired=true;
+    }
+
 
     this.state = {
       isLoggin:false,
       error: "",
-      isLogged:false
+      isLogged:false,
+      isExpired:isExpired
     };
     this.handleSubmit = this.handleSubmit.bind(this);
 
@@ -51,7 +60,7 @@ class Loginpage extends Component {
   }
 
   render() {
-    const { isLoggin,error,isLogged } = this.state;
+    const { isLoggin,error,isLogged,isExpired } = this.state;
     if (isLogged) {
       return <Redirect to="/" />;
     }
@@ -67,11 +76,16 @@ class Loginpage extends Component {
 
 
 
+
+
           <div className="row h-100 justify-content-center align-items-center">
             <div className="card login-box mt-5 login-card">
               <div className="card-body">
                   <h5 className="card-title text-center">Sign In</h5>
 
+                    {!error && isExpired &&
+                        <div className="alert alert-warning small">Your session is expired, please log in again</div>
+                    }
                     {error!=="" &&
                       <div className="alert alert-warning small">
                         {error}

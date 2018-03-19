@@ -36,7 +36,9 @@ class App extends Component {
         apiPing: "/api/ping",
         apiReboot: "/api/reboot",
         apiOverview: "/api/overview",
-        apiUpgrade: "/api/upgrade"
+        apiUpgrade: "/upgrade/upload",
+        apiUpgradeProgress: "/upgrade/ws",
+        apiFactoryReset: "/api/factoryReset"
     };
   }
 

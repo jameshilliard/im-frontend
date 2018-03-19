@@ -6,7 +6,7 @@ import {
   Redirect
 } from 'react-router-dom';
 
-class Rebootpage extends Component {
+class Resetpage extends Component {
 
   constructor(props) {
     super(props);
@@ -37,7 +37,7 @@ class Rebootpage extends Component {
             'Authorization': 'Bearer ' + token
         }
       };
-      axios.post(window.customVars.urlPrefix+window.customVars.apiReboot,postData,axiosConfig)
+      axios.post(window.customVars.urlPrefix+window.customVars.apiFactoryReset,postData,axiosConfig)
       .then(res => {
           if (res.data.success==false&&(typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
               deleteStorage("jwt");
@@ -97,9 +97,9 @@ class Rebootpage extends Component {
     }
 
     return (
-      <div className="Rebootpage">
+      <div className="Resetpage">
 
-      <h1>Maintenance<br/><small>Reboot</small></h1>
+      <h1>Maintenance<br/><small>Factory Reset</small></h1>
 
       <div className="row">
 
@@ -111,13 +111,14 @@ class Rebootpage extends Component {
                </div>
                    <div className="box-body p-4">
 
-                       <div className="alert alert-info">
-                           <p>This web interface will became unavailable after your press the Reboot button. Please wait until the reboot cycle complete.</p>
+                       <div className="alert alert-warning">
+                           <p>Pools settings and passwords will be resetted to factory defaults.</p>
+                           <p>This web interface will became unavailable after your press the Reset button and the miner will be restarted. Please wait until the reboot cycle complete.</p>
                        </div>
 
                    </div>
                  <div className="box-footer">
-                     <button disabled={rebooting} className="btn btn-primary" onClick={this.handleSubmit}>Reboot Now {rebooting && <div className="btn-loader lds-dual-ring"></div>}</button>
+                     <button disabled={rebooting} className="btn btn-primary" onClick={this.handleSubmit}>Reset Now {rebooting && <div className="btn-loader lds-dual-ring"></div>}</button>
                  </div>
 
              </div>
@@ -130,4 +131,4 @@ class Rebootpage extends Component {
   }
 }
 
-export default Rebootpage;
+export default Resetpage;

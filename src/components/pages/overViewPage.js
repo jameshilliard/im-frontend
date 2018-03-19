@@ -67,7 +67,7 @@ class OverViewpage extends Component {
     const { hardware,version,type,network,isLoadedSystem,isLoaded,redirectToLogin } = this.state;
 
     if (redirectToLogin) {
-      return <Redirect to="/login" />;
+      return <Redirect to="/login?expired" />;
     }
 
 

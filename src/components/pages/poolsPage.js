@@ -278,7 +278,7 @@ class Poolspage extends Component {
       return <Redirect to="/?restarting" />;
     }
     if (redirectToLogin) {
-      return <Redirect to="/login" />;
+      return <Redirect to="/login?expired" />;
     }
     var token=getStorage("jwt");
     var user=getStorage("userName");
@@ -450,7 +450,7 @@ class Poolspage extends Component {
 
               {isAdmin &&
               <div className="col-md-12 text-center">
-            
+
               <br />
                     <button ref="btn" disabled={!isLoaded||updatingPools} onClick={this.handleSubmit} className="btn btn-primary">Update Pools {updatingPools && <div className="btn-loader lds-dual-ring"></div>}</button>
                   {showAlert &&

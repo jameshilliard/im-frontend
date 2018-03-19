@@ -17,6 +17,7 @@ import Rebootpage from '../../components/pages/rebootPage';
 import OverViewpage from '../../components/pages/overViewPage';
 import Advancedpage from '../../components/pages/advancedPage';
 import Loginpage from '../../components/pages/loginPage';
+import Resetpage from '../../components/pages/resetPage';
 
 class Wrapper extends Component {
 
@@ -118,10 +119,11 @@ class Wrapper extends Component {
 
                         </li>
                         {isAdmin &&<li><a href="#maintenanceSubmenu" data-toggle="collapse" aria-expanded="false"><i className="fa fa-plug"></i>&nbsp;&nbsp; Maintenance</a>
-                            <Route path="/:path(upgrade|reboot)" children={({ match }) => (
+                            <Route path="/:path(upgrade|reboot|reset)" children={({ match }) => (
                               <ul className={match===null ? 'collapse list-unstyled':'list-unstyled'} id="maintenanceSubmenu">
                                 <li><NavLink to="/upgrade" activeClassName="active">Firmware</NavLink></li>
                                 <li><NavLink to="/reboot" activeClassName="active">Reboot</NavLink></li>
+                                {isAdmin &&<li><NavLink to="/reset" activeClassName="active">Factory Reset</NavLink></li>}
                             </ul>)} />
                         </li>}
                         <li><NavLink to="/overview" activeClassName="active"><i className="fa fa-microchip"></i>&nbsp;&nbsp; Overview</NavLink></li>
@@ -162,7 +164,7 @@ class Wrapper extends Component {
                         <Route exact path='/upgrade' component={Upgradepage} />
                         <Route exact path='/reboot' component={Rebootpage} />
                         <Route exact path='/overview' component={OverViewpage} />
-                        <Route exact path='/advanced' component={Advancedpage} />
+                        <Route exact path='/reset' component={Resetpage} />
                     </div>
                     {/* ./ Page content */}
                 </div>

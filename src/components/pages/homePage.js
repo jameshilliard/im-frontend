@@ -116,7 +116,7 @@ class Homepage extends Component {
     const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin } = this.state;
 
     if (redirectToLogin) {
-      return <Redirect to="/login" />;
+      return <Redirect to="/login?expired" />;
     }
 
     return (

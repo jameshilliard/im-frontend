@@ -18,6 +18,38 @@ class Securitypage extends Component {
 
   }
 
+  componentDidMount() {
+
+    var page=this;
+    var token=getStorage("jwt");
+    if (token===null) {
+      this.setState({"redirectToLogin":true});
+    } else {
+        var postData = {
+
+        };
+        let axiosConfig = {
+          headers: {
+              'Authorization': 'Bearer ' + token
+          }
+        };
+        axios.post(window.customVars.urlPrefix+window.customVars.apiPing,postData,axiosConfig)
+        .then(res => {
+          if (!res.data.success) {
+            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+                deleteStorage("jwt");
+                page.setState({"redirectToLogin":true});
+            }
+          }
+
+          })
+          .catch(function (error) {
+
+          });
+    }
+
+  }
+
 
   handleSubmit(event) {
     event.preventDefault();
@@ -54,7 +86,7 @@ class Securitypage extends Component {
               this.refs.confirmPassword.value="";
               var comp=this;
 
-              
+
               let axiosConfig = {
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -90,7 +122,7 @@ class Securitypage extends Component {
     var { alertMessage,updatedPassword,updatingPassword,redirectToLogin } = this.state;
 
     if (redirectToLogin) {
-      return <Redirect to="/login" />;
+      return <Redirect to="/login?expired" />;
     }
 
     return (

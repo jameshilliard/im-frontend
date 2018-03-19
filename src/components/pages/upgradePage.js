@@ -15,23 +15,78 @@ class Upgradepage extends Component {
         fields: {
 
         },
-        "upgrading":false,
-        "keepSettings":1,
-        "errorMessage":"",
+        upgrading:false,
         upgraded:false,
         upgradePercent:0,
-        upgradeMessage:"",
+        rebooting:false,
         redirectToIndex:false,
         redirectToLogin:false,
-        errorLog:[]
+        errorMessage: "",
+        upgradeMessages:[],
+        upgradeStatus:"",
+        upgradeStep:"",
+        upgradeStepCount:"",
+        upgradeDidRun: false
     };
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.reboot = this.reboot.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
   }
 
+  componentDidMount() {
+
+    var page=this;
+    var token=getStorage("jwt");
+    if (token===null) {
+      this.setState({"redirectToLogin":true});
+    } else {
+        var postData = {
+
+        };
+        let axiosConfig = {
+          headers: {
+              'Authorization': 'Bearer ' + token
+          }
+        };
+        axios.post(window.customVars.urlPrefix+window.customVars.apiPing,postData,axiosConfig)
+        .then(res => {
+          if (!res.data.success) {
+            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+                deleteStorage("jwt");
+                page.setState({"redirectToLogin":true});
+            }
+          }
+
+          })
+          .catch(function (error) {
+
+          });
+    }
+
+  }
+
+
+  updateStatus(status) {
+    this.setState({upgradeStatus:status});
+    switch (status) {
+      case 'START':
+        this.setState({"upgradePercent":0});
+        break
+      case 'RUN':
+        break
+      case 'SUCCESS':
+        this.setState({"upgraded":true,"upgrading":false});
+        break
+      case 'FAILURE':
+        this.setState({"upgrading":false});
+        break
+      default:
+        break
+    }
+  }
 
   handleSubmit(event) {
-    const { upgrading } = this.state;
+    const { upgrading, upgradeMessages,upgradeStatus } = this.state;
 
     event.preventDefault();
       if (!upgrading) {
@@ -49,89 +104,65 @@ class Upgradepage extends Component {
               onUploadProgress: function(progressEvent) {
                 var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
                 comp.setState({upgradePercent:percentCompleted});
-                if (percentCompleted==100) {
-                  comp.setState({upgradeMessage:"Upgrading Firmware"});
-
-                  setTimeout(() => {
-                    comp.setState({upgradePercent:0});
-                    setTimeout(() => {
-                      comp.setState({upgradePercent:50});
-                    }, 2000);
-                  }, 1000);
-                }
               },
               headers: {
                   'Authorization': 'Bearer ' + token,
-                  'X_FILENAME': this.fileInput.files[0].name
+                  'Content-Type': 'multipart/form-data'
               }
             }
-            this.setState({upgrading:true,errorMessage:"",upgradeMessage:"Uploading Firmware"});
+
+            comp.setState({"upgradeStatus":"IDLE","upgradeStep":"Uploading","upgradeMessages":[],"upgradeDidRun":true});
+            var ws = new WebSocket('ws://' + window.location.host + window.location.pathname.replace(/\/[^\/]*$/, '') + window.customVars.apiUpgradeProgress)
+
+
+            ws.onmessage = function (event) {
+              var msg = JSON.parse(event.data)
+
+              switch (msg.type) {
+                case 'message':
+                  upgradeMessages.push({"level":msg.level,"text":msg.text})
+                  comp.setState({"upgradeMessages":upgradeMessages});
+                  break
+                case 'status':
+                  comp.updateStatus(msg.status);
+
+
+                  break
+                case 'source':
+                  break
+                case 'step':
+                  var percent = Math.round((100 * (Number(msg.step) - 1) + Number(msg.percent)) / Number(msg.number))
+                  //var value = percent + '%' + ' (' + msg.step + ' of ' + msg.number + ')'
+                  var upgradeStepCount=msg.step + ' of ' + msg.number;
+                  comp.setState({"upgradeStep":msg.name,"upgradeStepCount":upgradeStepCount,"upgradePercent":percent});
+                  break
+              }
+            }
+
+            this.setState({upgrading:true,errorMessage:""});
             var fd = new FormData();
 
-            fd.append("keepsettings", this.state.keepSettings);
+
+            //fd.append("keepsettings", this.state.keepSettings);
             fd.append("upfile", this.fileInput.files[0]);
 
             axios.post(window.customVars.urlPrefix+window.customVars.apiUpgrade, fd, config)
             .then(function (res) {
                 if (res.data.success === true) {
 
-                  comp.setState({upgradePercent:100});
-                  comp.setState({upgrading:false,errorMessage:"",upgraded:true});
-
-
-                } else {
-
-                  comp.setState({upgradePercent:100});
-                  if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
-                      deleteStorage("jwt");
-                      comp.setState({"redirectToLogin":true});
-                  } else if (typeof res.data.output !== 'undefined'){
-                      comp.setState({upgrading:false,errorMessage:"Error upgrading the firmware",upgraded:false,errorLog:res.data.output})
-                  }
-
                 }
             })
             .catch(function (error) {
+                
+
+                if (error.response&&error.response.status == 401) {
+                  deleteStorage("jwt");
+                  comp.setState({"redirectToLogin":true});
+                }
 
             });
 
-            /*
-            var comp=this;
-            var xhr = new XMLHttpRequest();
-        		if (xhr.upload) {
 
-
-        			// progress bar
-        			xhr.upload.addEventListener("progress", function(e) {
-        				var pc = parseInt(100 - (e.loaded / e.total * 100));
-        				comp.setState({upgradePercent:pc});
-        			}, false);
-
-        			// file received/failed
-        			xhr.onreadystatechange = function(e) {
-        				comp.poll(1000);
-        				if (xhr.readyState == 4) {
-        					if (xhr.status != 200) {
-
-                    comp.setState({upgrading:false,errorMessage:"Error uploading the file"});
-        						return;
-        					}
-                  comp.setState({upgrading:false,errorMessage:"",upgradeMessage:"2. Upgrading Firmware"});
-        				}
-        			};
-
-        			// start upload
-              this.setState({upgrading:true,errorMessage:"",upgradeMessage:"1. Uploading Firmware"});
-
-        			xhr.open("POST", window.customVars.urlPrefix+window.customVars.apiUpgrade, true);
-              xhr.setRequestHeader("Authorization", 'Bearer ' +  token);
-        			xhr.setRequestHeader("X_FILENAME", this.fileInput.files[0].name);
-        			xhr.send(this.fileInput.files[0]);
-
-        		}
-
-
-            */
           }
 
 
@@ -140,61 +171,58 @@ class Upgradepage extends Component {
 
   }
 
-  getProgress() {
-      var comp=this;
-      var status;
-  		var listempty;
-  		var msg ="";
-  		var lasterror = 0;
-      axios.post(window.customVars.urlPrefix+window.customVars.apiUpgradeProgress)
-      .then(function (response) {
-        response.data.forEach(function(key,val)  {
-          console.log(val);
-          comp.poll(1000);
-          /*
-          if (key == "Status")
-					status = val;
-  				if (key == "Msg" && val != "" )
-  					msg = val;
-  				if (key == "Error")
-  					lasterror = val;
+  reboot(event) {
+    event.preventDefault();
+    var token=getStorage("jwt");
+    if (token===null) {
+      this.setState({"redirectToLogin":true});
+    } else {
+      this.setState({"rebooting":true});
 
-            if (msg) {
-      				if (lasterror == 0)
-      					Output("<p>" + msg + "</p>");
-      				else
-      					Output("<p><strong>" + msg + "</strong></p>");
-      			}
-            */
-        });
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiReboot,postData,axiosConfig)
+      .then(res => {
+          if (res.data.success==false&&(typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+              deleteStorage("jwt");
+              this.setState({"redirectToLogin":true});
+          }
       })
       .catch(function (error) {
 
       });
-
+      var comp=this;
+      setTimeout(() => {
+        comp.setState({"redirectToIndex":true});
+      }, 4000);
     }
 
-  poll(timer){
-    var comp=this;
-		setTimeout(function(){
-			comp.getProgress();
-		}, timer);
-	}
+  }
+
 
   handleInputChange(event) {
    const target = event.target;
    const value = target.type === 'checkbox' ? target.checked : target.value;
    const name = target.name;
-   if (name==="keepSettings") {
-     this.setState({"keepSettings":(value?1:0)});
-   }
+
   }
 
   render() {
-    const { upgrading,errorMessage,keepSettings,upgradePercent,upgradeMessage,upgraded,redirectToLogin,upgradePhase,errrorLog } = this.state;
+    const { upgrading,errorMessage,keepSettings,upgradePercent,upgraded,redirectToIndex,redirectToLogin,upgradeStatus,upgradeMessages,upgradeStep,upgradeStepCount,upgradeDidRun,rebooting } = this.state;
+
+    if (redirectToIndex) {
+      return <Redirect to="/?rebooting" />;
+    }
+
 
     if (redirectToLogin) {
-      return <Redirect to="/login" />;
+      return <Redirect to="/login?expired" />;
     }
     return (
       <div className="Upgradepage">
@@ -213,66 +241,91 @@ class Upgradepage extends Component {
 
                        {!upgraded &&
                        <div>
-                           <ol className="text-normal">
+                           <ol className="small">
                            <li>The update.swu file should be obtained from our support center</li>
-                           <li>Check the "Keep User Settings" option if you want to retain your configuration.</li>
-                           <li>Do not power off or refresh this page during the upgrade process.</li>
-                           <li>After the upgrade process is completed, the system will reboot automatically.</li>
-
+                           <li>Do not power off or refresh this page during the upgrade process</li>
+                           <li>All your settings will be preserved</li>
                            </ol>
 
-                           {!upgrading &&
-                           <div>
+
 
                              <div className="form-group row">
-                                 <label htmlFor="inputKeepSettings" className="col-sm-3 col-form-label">Keep User Settings</label>
-                                 <div className="col-sm-9">
-                                     <input name="keepSettings" onChange={this.handleInputChange} type="checkbox" checked={keepSettings=="1"} id="inputKeepSettings" /> &nbsp;&nbsp;
-                                     <small>Please check this box if you want to preserve all you configurations after the upgrade process.</small>
-                                 </div>
-                             </div>
-                             <div className="form-group row">
-                                 <label htmlFor="inputImage" className="col-sm-3 col-form-label">Image</label>
-                                 <div className="col-sm-9">
+                                 <div className="col-md-12 text-center">
                                      <input ref={input => {this.fileInput = input;}} type="file" className="form-control-sm" id="inputImage" placeholder="Upload Firmware" />
                                  </div>
                              </div>
-                           </div>
-                           }
 
-                           {errorMessage!=="" &&
-                           <div className="alert alert-warning small">
-                            <ul>
-                             <h4 class="alert-heading">{errorMessage}</h4>
-                             {this.state.errorLog.map((message, index) => (
-                                <li>{message}</li>
-                             ))}
-                             </ul>
-                           </div>
-                           }
-
-                           {upgrading &&
-                             <div>
-                               <h3>Upgrade process</h3>
-                               <div className="progress">
-                                  <div className="progress-bar" role="progressbar" style={{width: upgradePercent + "%"}} aria-valuenow={upgradePercent} aria-valuemin="0" aria-valuemax="100">{upgradePercent}%</div>
-
+                             {errorMessage!="" &&
+                               <div className="alert alert-warning small">
+                                {errorMessage}
                                </div>
-                               <small>{upgradeMessage}</small>
-                             </div>
+                              }
+                           </div>
                            }
-                        </div>
-                        }
-                        {upgraded &&
-                        <div>
-                          <div className="alert alert-success">
-                            Firmware updated successfully, rebooting...
-                          </div>
 
-                        </div>
-                        }
+                          {upgradeDidRun &&
+                            <div>
+
+                               <h5 className="mt-4">Upgrade process</h5>
+                               <div className="row mt-2">
+                                  <div class="col-md-3 field-title">
+                                    Status
+                                  </div>
+                                  <div className="col-md-9 field-value">
+                                    <span className={upgradeStatus=="FAILURE" &&"text-warning"}>{upgradeStatus}</span>
+                                  </div>
+                               </div>
+                               <div className="row mt-2">
+                                  <div className="col-md-3 field-title">
+                                    Progress
+                                  </div>
+                                  <div className="col-md-9">
+                                    <div className="progress">
+                                       <div className="progress-bar" role="progressbar" style={{width: upgradePercent + "%"}} aria-valuenow={upgradePercent} aria-valuemin="0" aria-valuemax="100">{upgradePercent}%</div>
+                                    </div>
+                                  </div>
+                               </div>
+                               <div className="row mt-2">
+                                  <div className="col-md-3 field-title">
+                                    Step
+                                  </div>
+                                  <div className="col-md-9 field-value">
+                                    {upgradeStep} <i>{upgradeStepCount}</i>
+                                  </div>
+                               </div>
+
+                               <p className="text-center mt-3">
+                                <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapseDetails" aria-expanded="false" aria-controls="collapseDetails">
+                                  View details
+                                </button>
+                               </p>
+
+                              <div class="collapse" id="collapseDetails">
+                                <div class="card card-body">
+                                  <ul className="small">
+                                  {this.state.upgradeMessages.map((message, index) => (
+                                     <li className={message.level<=3 &&"text-warning"}>{message.text}</li>
+                                  ))}
+                                  </ul>
+                                </div>
+                              </div>
+
+                              {upgraded &&
+                              <div className="alert alert-success small mt-4">
+                                The firmware has been upgraded, please click in the <strong>Reboot</strong> button to restart the miner.
+                              </div>
+                              }
+
+                           </div>
+                          }
 
                    </div>
+
+                   {upgraded &&
+                   <div className="box-footer">
+                       <button disabled={rebooting} className="btn btn-primary" onClick={this.reboot}>Reboot Now {rebooting && <div className="btn-loader lds-dual-ring"></div>}</button>
+                   </div>
+                   }
                    {!upgraded &&
                    <div className="box-footer">
                        <button disabled={upgrading} className="btn btn-primary" onClick={this.handleSubmit}>Upgrade Now {upgrading && <div className="btn-loader lds-dual-ring"></div>}</button>

@@ -179,7 +179,7 @@ class Networkpage extends Component {
     const { fields,fieldsValidation,isLoaded,updatingNetwork,alert,redirectToLogin } = this.state;
 
     if (redirectToLogin) {
-      return <Redirect to="/login" />;
+      return <Redirect to="/login?expired" />;
     }
 
     var token=getStorage("jwt");
@@ -218,7 +218,7 @@ class Networkpage extends Component {
                          <label htmlFor="inputDhcp" className="col-sm-2 col-form-label">DHCP</label>
                          <div className="col-sm-10">
                              <input name="dhcp" disabled={!isLoaded||!isAdmin} onChange={this.handleInputChange} type="checkbox" checked={fields.dhcp==="dhcp"} id="inputDhcp" /> &nbsp;&nbsp;
-                             <small>Please check this box if you want the miner receive an IP address automatically from your DHCP server.</small>
+                             <small>Please check this box if you want the miner to receive an IP address automatically from your DHCP server.</small>
                          </div>
                      </div>
                       <div className={"form-group row mt-4 " + (!fieldsValidation.ipaddress && "has-error")}>
