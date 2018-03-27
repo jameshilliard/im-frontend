@@ -26,7 +26,8 @@ class Upgradepage extends Component {
         upgradeStatus:"",
         upgradeStep:"",
         upgradeStepCount:"",
-        upgradeDidRun: false
+        upgradeDidRun: false,
+        uploadPercent: 0
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.reboot = this.reboot.bind(this);
@@ -103,7 +104,7 @@ class Upgradepage extends Component {
             const config = {
               onUploadProgress: function(progressEvent) {
                 var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
-                comp.setState({upgradePercent:percentCompleted});
+                comp.setState({uploadPercent:percentCompleted});
               },
               headers: {
                   'Authorization': 'Bearer ' + token,
@@ -214,7 +215,7 @@ class Upgradepage extends Component {
   }
 
   render() {
-    const { upgrading,errorMessage,keepSettings,upgradePercent,upgraded,redirectToIndex,redirectToLogin,upgradeStatus,upgradeMessages,upgradeStep,upgradeStepCount,upgradeDidRun,rebooting } = this.state;
+    const { upgrading,errorMessage,keepSettings,upgradePercent,uploadPercent,upgraded,redirectToIndex,redirectToLogin,upgradeStatus,upgradeMessages,upgradeStep,upgradeStepCount,upgradeDidRun,rebooting } = this.state;
 
     if (redirectToIndex) {
       return <Redirect to="/?rebooting" />;
@@ -268,7 +269,7 @@ class Upgradepage extends Component {
 
                                <h5 className="mt-4">Upgrade process</h5>
                                <div className="row mt-2">
-                                  <div class="col-md-3 field-title">
+                                  <div className="col-md-3 field-title">
                                     Status
                                   </div>
                                   <div className="col-md-9 field-value">
@@ -277,7 +278,17 @@ class Upgradepage extends Component {
                                </div>
                                <div className="row mt-2">
                                   <div className="col-md-3 field-title">
-                                    Progress
+                                    Upload progress
+                                  </div>
+                                  <div className="col-md-9">
+                                    <div className="progress">
+                                       <div className="progress-bar" role="progressbar" style={{width: uploadPercent + "%"}} aria-valuenow={uploadPercent} aria-valuemin="0" aria-valuemax="100">{uploadPercent}%</div>
+                                    </div>
+                                  </div>
+                               </div>
+                               <div className="row mt-2">
+                                  <div className="col-md-3 field-title">
+                                     Upgrade progress
                                   </div>
                                   <div className="col-md-9">
                                     <div className="progress">
@@ -295,13 +306,13 @@ class Upgradepage extends Component {
                                </div>
 
                                <p className="text-center mt-3">
-                                <button class="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapseDetails" aria-expanded="false" aria-controls="collapseDetails">
+                                <button className="btn btn-secondary btn-sm" type="button" data-toggle="collapse" data-target="#collapseDetails" aria-expanded="false" aria-controls="collapseDetails">
                                   View details
                                 </button>
                                </p>
 
-                              <div class="collapse" id="collapseDetails">
-                                <div class="card card-body">
+                              <div className="collapse" id="collapseDetails">
+                                <div className="card card-body">
                                   <ul className="small">
                                   {this.state.upgradeMessages.map((message, index) => (
                                      <li className={message.level<=3 &&"text-warning"}>{message.text}</li>

@@ -18,6 +18,8 @@ import OverViewpage from '../../components/pages/overViewPage';
 import Advancedpage from '../../components/pages/advancedPage';
 import Loginpage from '../../components/pages/loginPage';
 import Resetpage from '../../components/pages/resetPage';
+import Profilepage from '../../components/pages/profilePage';
+import SelfTestPage from '../../components/pages/selfTestPage';
 
 class Wrapper extends Component {
 
@@ -110,11 +112,12 @@ class Wrapper extends Component {
                     <ul className="list-unstyled components">
                         <li><NavLink to="/" exact={true} activeClassName="active"><i className="fa fa-dashboard"></i>&nbsp;&nbsp; Miner Status</NavLink></li>
                         <li><a href="#settingSubmenu" data-toggle="collapse" aria-expanded="false"><i className="fa fa-gear"></i>&nbsp;&nbsp; Settings</a>
-                            <Route path="/:path(pools|security|network)" children={({ match }) => (
+                            <Route path="/:path(pools|security|network|profile)" children={({ match }) => (
                               <ul className={match===null ? 'collapse list-unstyled':'list-unstyled'} id="settingSubmenu">
                                 <li><NavLink to="/pools" activeClassName="active">Pools</NavLink></li>
                                 {isAdmin &&<li><NavLink to="/security" activeClassName="active">Security</NavLink></li>}
                                 <li><NavLink to="/network" activeClassName="active">Network</NavLink></li>
+                                {isAdmin &&<li><NavLink to="/profile" activeClassName="active">Performance</NavLink></li>}
                             </ul>)} />
 
                         </li>
@@ -165,6 +168,8 @@ class Wrapper extends Component {
                         <Route exact path='/reboot' component={Rebootpage} />
                         <Route exact path='/overview' component={OverViewpage} />
                         <Route exact path='/reset' component={Resetpage} />
+                        <Route exact path='/profile' component={Profilepage} />
+                        <Route exact path='/selfTest' component={SelfTestPage} />
                     </div>
                     {/* ./ Page content */}
                 </div>

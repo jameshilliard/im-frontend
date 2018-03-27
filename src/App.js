@@ -38,7 +38,12 @@ class App extends Component {
         apiOverview: "/api/overview",
         apiUpgrade: "/upgrade/upload",
         apiUpgradeProgress: "/upgrade/ws",
-        apiFactoryReset: "/api/factoryReset"
+        apiFactoryReset: "/api/factoryReset",
+        apiStartSelfTest: "/api/startSelfTest",
+        apiSelfTestStatus: "/api/selfTestStatus",
+        apiSelfTestLogs: "/api/getSelfTestLog",
+        apiHasAgeing: "/api/hasAgeing",
+        apiSetAutoTune: "/api/setAutoTune"
     };
   }
 
