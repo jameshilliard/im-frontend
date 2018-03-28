@@ -65,9 +65,15 @@ class Homepage extends Component {
 
         if (res.data.success==true) {
           const chains = res.data.DEVS;
+
           upTime=chains[0]['Device Elapsed']*1000;
-          fansSpeed=res.data.HARDWARE["Fan duty"];
+          if ("HARDWARE" in res.data && "Fan duty" in res.data.HARDWARE && parseInt(res.data.HARDWARE["Fan duty"])>0) {
+            fansSpeed=res.data.HARDWARE["Fan duty"];
+          }
           chains.forEach(function(chain)  {
+            if ("DUTY" in chain&&parseInt(chain['DUTY'])>0) {
+              fansSpeed=chain['DUTY'];
+            }
             accepted+=parseInt(chain["Accepted"]);
             rejected+=parseInt(chain["Rejected"]);
             hwErrors+=parseInt(chain["Hardware Errors"]);
@@ -228,7 +234,21 @@ class Homepage extends Component {
                       <td>{chain.Status==="Alive" ? <span className="badge badge-success font-normal">Alive</span>:<span className="badge badge-warning font-normal">Dead</span>}</td>
                       <td>{chain.Accepted}/{chain.Rejected}</td>
                       <td>{chain["Hardware Errors"]}</td>
-                      <td><span className="badge badge-temp">{Math.round(chain.Temperature)} &#8451;</span></td></tr>
+                      <td>
+
+                      {chain.Temperature &&
+                        <span className="badge badge-temp">{Math.round(chain.Temperature)} &#8451;</span>
+                      }
+                      {chain.TempMIN &&
+                        <span className="badge badge-temp small mr-1">{Math.round(chain.TempMIN)} &#8451;</span>
+                      }
+                      {chain.TempAVG &&
+                        <span className="badge badge-temp small mr-1">{Math.round(chain.TempAVG)} &#8451;</span>
+                      }
+                      {chain.TempMAX &&
+                        <span className="badge badge-temp small">{Math.round(chain.TempMAX)} &#8451;</span>
+                      }
+                      </td></tr>
                     ))}
                     </tbody>
                   </table>
