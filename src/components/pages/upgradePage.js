@@ -27,10 +27,14 @@ class Upgradepage extends Component {
         upgradeStep:"",
         upgradeStepCount:"",
         upgradeDidRun: false,
-        uploadPercent: 0
+        uploadPercent: 0,
+        checkingLatestFirmware: false,
+        latestFirmware: null,
+        errorCheckingLatestFirmware: ""
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.reboot = this.reboot.bind(this);
+    this.checkLatestFirmware = this.checkLatestFirmware.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
   }
 
@@ -206,6 +210,49 @@ class Upgradepage extends Component {
 
   }
 
+  checkLatestFirmware(event) {
+    event.preventDefault();
+    var token=getStorage("jwt");
+    if (token===null) {
+      this.setState({"redirectToLogin":true});
+    } else {
+      this.setState({"checkingLatestFirmware":true,"errorCheckingLatestFirmware":""});
+
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiLatestFirmwareVersion,postData,axiosConfig)
+      .then(res => {
+          if (res.data.success) {
+            var latestFirmware={
+              "version":res.data.version,
+              "versionDate":res.data.versionDate,
+              "info":res.data.info,
+              "url":res.data.url,
+              "currentVersion":res.data.currentVersion,
+              "currentVersionDate":res.data.currentVersionDate,
+              "isUpdated":res.data.isUpdated
+            };
+            this.setState({"latestFirmware":latestFirmware,"checkingLatestFirmware":false});
+          } else {
+            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+                deleteStorage("jwt");
+                this.setState({"redirectToLogin":true});
+            }
+          }
+      })
+      .catch(function (error) {
+
+      });
+
+    }
+  }
+
 
   handleInputChange(event) {
    const target = event.target;
@@ -215,7 +262,25 @@ class Upgradepage extends Component {
   }
 
   render() {
-    const { upgrading,errorMessage,keepSettings,upgradePercent,uploadPercent,upgraded,redirectToIndex,redirectToLogin,upgradeStatus,upgradeMessages,upgradeStep,upgradeStepCount,upgradeDidRun,rebooting } = this.state;
+    const {
+      upgrading,
+      errorMessage,
+      keepSettings,
+      upgradePercent,
+      uploadPercent,
+      upgraded,
+      redirectToIndex,
+      redirectToLogin,
+      upgradeStatus,
+      upgradeMessages,
+      upgradeStep,
+      upgradeStepCount,
+      upgradeDidRun,
+      rebooting,
+      checkingLatestFirmware,
+      latestFirmware,
+      errorCheckingLatestFirmware
+     } = this.state;
 
     if (redirectToIndex) {
       return <Redirect to="/?rebooting" />;
@@ -232,8 +297,8 @@ class Upgradepage extends Component {
 
         <div className="row">
 
-            {/* Box  */}
-           <div className="col-md-12 mt-5">
+           {/* Box  */}
+           <div className="col-md-7 mt-5">
              <div className="box">
                <div className="box-header">
                  <h3>Upgrade</h3>
@@ -342,6 +407,72 @@ class Upgradepage extends Component {
              </div>
            </div>
            {/* ./ Box  */}
+           {/* Box  */}
+           <div className="col-md-5 mt-5">
+             <div className="box">
+               <div className="box-header">
+                 <h3>Latest Firmware</h3>
+               </div>
+                   <div className="box-body p-4 small">
+                    Check the latest firmware avaialble for your miner!
+
+
+                   {latestFirmware &&
+                     <div>
+
+                        <h6 className="mt-4">Current Version
+                        {latestFirmware.isUpdated && <span className="badge badge-success small ml-2">Updated</span>}
+                        {!latestFirmware.isUpdated && <span className="badge badge-warning small ml-2">Not Updated</span>}</h6>
+                        <div className="row mt-2">
+                           <div className="col-md-4 field-title">
+                             Current Version
+                           </div>
+                           <div className="col-md-8 field-value">
+                             {latestFirmware.currentVersion}<br/>{latestFirmware.currentVersionDate}
+                           </div>
+                        </div>
+                        <div className="row mt-2">
+                           <div className="col-md-4 field-title">
+                             Latest Version
+                           </div>
+                           <div className="col-md-8 field-value">
+                             {latestFirmware.version}<br/>{latestFirmware.versionDate}
+                           </div>
+                        </div>
+                        <div className="row mt-2">
+                           <div className="col-md-4 field-title">
+                              Download Link
+                           </div>
+                           <div className="col-md-8 field-value">
+                              <a href={latestFirmware.url} target="_blank" title="Download Now">Download Now</a>
+                           </div>
+                        </div>
+                        <div className="row mt-2">
+                           <div className="col-md-4 field-title">
+                              Version Information
+                           </div>
+                           <div className="col-md-8 field-value">
+                              {latestFirmware.info}
+                           </div>
+                        </div>
+
+                    </div>
+                   }
+
+                   {errorCheckingLatestFirmware &&
+                      <div className="alert alert-warning small">
+                        {errorCheckingLatestFirmware}
+                      </div>
+                   }
+                   </div> {/*.box-body*/}
+
+                   <div className="box-footer">
+                       <button disabled={checkingLatestFirmware} className="btn btn-primary" onClick={this.checkLatestFirmware}>Check Now {checkingLatestFirmware && <div className="btn-loader lds-dual-ring"></div>}</button>
+                   </div>
+
+
+             </div>
+           </div>
         </div>
       </div>
     );
