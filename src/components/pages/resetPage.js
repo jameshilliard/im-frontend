@@ -112,8 +112,8 @@ class Resetpage extends Component {
                    <div className="box-body p-4">
 
                        <div className="alert alert-warning">
-                           <p>Pools settings and passwords will be resetted to factory defaults.</p>
-                           <p>This web interface will became unavailable after your press the Reset button and the miner will be restarted. Please wait until the reboot cycle complete.</p>
+                           <p>Pools settings and passwords will be reset to factory defaults.</p>
+                           <p>This web interface will became unavailable after your press the reset button and the miner will be restarted. Please wait until the reboot cycle complete.</p>
                        </div>
 
                    </div>
