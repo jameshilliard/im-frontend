@@ -15,8 +15,7 @@ class Profilepage extends Component {
       "hasAutoTuneDefault": true,
       "redirectToLogin": false,
       "saving": false,
-      "formChanged": false,
-      "hasSelfTest": false
+      "formChanged": false
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -40,7 +39,7 @@ class Profilepage extends Component {
         axios.post(window.customVars.urlPrefix+window.customVars.apiHasAgeing,postData,axiosConfig)
         .then(res => {
           if (res.data.success === true) {
-            page.setState({"isLoaded":true,"hasAutoTune":res.data.hasAutoTune,"hasSelfTest":res.data.hasSelfTest,"hasAutoTuneDefault":res.data.ageing});
+            page.setState({"isLoaded":true,"hasAutoTune":res.data.hasAutoTune,"hasAutoTuneDefault":res.data.ageing});
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
@@ -109,7 +108,7 @@ class Profilepage extends Component {
   }
 
   render() {
-    var { alertMessage,isLoaded,hasAutoTune,redirectToLogin,selfTestError,selfTestRunning,selfTestLog,selfTestIsDone,saving,formChanged,saved,hasSelfTest } = this.state;
+    var { alertMessage,isLoaded,hasAutoTune,redirectToLogin,saving,formChanged,saved } = this.state;
 
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
@@ -140,19 +139,18 @@ class Profilepage extends Component {
 
                    <div className="row">
                       <div className="col-md-12 text-center">
-                        <p className="small text-left">Enabling the auto tune will allow your miner to work with the best combination of frequency and voltage to obtain the highest possible Hash Rate.</p>
-                        <p className="small text-left">It is possible that you should run <b>Calibrate</b> to recalculate these parameters, since the established ones are possibly different due to climatic changes.</p>
+                        <p className="small text-left">There are two modes for your miner</p>
+                        <ol className="small text-left">
+                          <li>Auto Tune Enabled: The miner will dynamically search the voltage and frequency values for your miner.</li>
+                          <li>Auto Tune Disabled (default value and recommended): The miner will work with the factory default values or the best values found during device calibration.</li>
+                        </ol>
+                    
                         <h3 className="color-title">Auto tune: </h3>
                         <label className="switch">
-                          <input disabled={!isLoaded||!hasSelfTest} type="checkbox" checked={hasAutoTune&&hasSelfTest} onChange={this.handleInputChange} name="autotune" />
+                          <input disabled={!isLoaded} type="checkbox" checked={hasAutoTune} onChange={this.handleInputChange} name="autotune" />
                           <span className="slider"></span>
                         </label><br />
 
-                        {!hasSelfTest &&
-                          <div className="alert alert-warning small">
-                            Auto Tune can&#39;t be enabled because you need to run self test first.
-                          </div>
-                        }
 
 
                       </div>
@@ -164,7 +162,7 @@ class Profilepage extends Component {
 
                  </div>
                  <div className="box-footer clearfix">
-                      <button disabled={!formChanged||saving||selfTestRunning} className="btn btn-primary pull-left" onClick={this.handleSubmit}>Save {saving||selfTestRunning && <div className="btn-loader lds-dual-ring"></div>}</button>
+                      <button disabled={!formChanged||saving} className="btn btn-primary pull-left" onClick={this.handleSubmit}>Save {saving && <div className="btn-loader lds-dual-ring"></div>}</button>
                       <Link to={'/selfTest'} className="pull-right"><button className="btn btn-secondary">Run Calibrate</button></Link>
 
 
