@@ -18,7 +18,6 @@ class CalibrationPage extends Component {
       "selfTestProgress": 0,
       "selfTestIntermediateProgress": 0,
       "selfTestIsDone": false,
-      "selfTestPeriod": 0,
       "hasSelfTest": true
     };
 
@@ -73,51 +72,22 @@ class CalibrationPage extends Component {
           if (res.data.success === true) {
             page.setState({"isLoaded":true});
             if (res.data.running===true) {
-
-              page.setState({"selfTestRunning":true,"selfTestPeriod":res.data.testPeriod});
               //Self Test is Running
               var progress=0;
               if (res.data.steps>0&&res.data.step>=0) {
-                progress=(res.data.step/res.data.steps)*100;
-                if (progress!=selfTestProgress||progress==0&&selfTestProgress==0) {
-                  selfTestProgress=progress;
-                  console.log("P "+progress);
-                  page.setState({"selfTestProgress":selfTestProgress});
-                }
-                if (progress!=100)
-                  page.runIntermediateProgress(selfTestProgress,(((res.data.step+1)/res.data.steps)*100)-1);
-
+                progress=parseInt((res.data.step/res.data.steps)*100);
+                page.setState({"selfTestRunning":true,"selfTestProgress":progress});
               }
-              page.timeOutLogs=setTimeout(() => {
+              page.timeOutProgress=setTimeout(() => {
                 page.checkProgress();
-              }, 30000);
+              }, 20000);
             } else {
-
               //Self Test not Running
               if (selfTestRunning) {
                 page.setState({"selfTestRunning":false,"selfTestIsDone":true});
               }
             }
-            /*
-            var progress=0;
-            if (res.data.steps>0&&res.data.step>=0) {
-              progress=(res.data.step/res.data.steps)*100;
-              if (progress==0||(progress>selfTestProgress&&progress!=100)) {
-                  page.runIntermediateProgress(selfTestProgress,(((res.data.step+1)/res.data.steps)*100)-1);
-              } else if(progress==100) {
-                //page.setState({"selfTestProgress":progress,"selfTestRunning":false,"selfTestIsDone":true})
-              }
-            }
 
-            if (res.data.running === true) {
-              page.setState({"isLoaded":true,"selfTestRunning":true,"selfTestPeriod":res.data.testPeriod});
-              page.timeOutLogs=setTimeout(() => {
-                page.checkProgress();
-              }, 30000);
-            } else {
-              page.setState({"isLoaded":true,"selfTestRunning":false});
-            }
-            */
 
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
@@ -134,63 +104,11 @@ class CalibrationPage extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.timeOutLogs !== 'undefined')
-      clearTimeout(this.timeOutLogs);
+    if (typeof this.timeOutProgress !== 'undefined')
+      clearTimeout(this.timeOutProgress);
   }
 
-  /*getLogs() {
-    var { selfTestLog,selfTestLastLogLine } = this.state;
-    var page=this;
-    var token=getStorage("jwt");
-    if (token===null) {
-      this.setState({"redirectToLogin":true});
-    } else {
-        var params = new URLSearchParams();
-        params.append('line', selfTestLastLogLine);
-        let axiosConfig = {
-          headers: {
-              'Authorization': 'Bearer ' + token
-          }
-        };
 
-        axios.post(window.customVars.urlPrefix+window.customVars.apiSelfTestLogs,params,axiosConfig)
-        .then(res => {
-          if (res.data.success === true) {
-            //Self test Running
-            if (res.data.lines instanceof Array) {
-              res.data.lines.forEach(function(message)  {
-                selfTestLog.push(message);
-                selfTestLastLogLine++;
-
-
-              });
-              if (res.data.lines.length>0)
-                page.setState({"selfTestLog":selfTestLog,"selfTestLastLogLine":selfTestLastLogLine});
-            }
-            if (res.data.running) {
-              //its Running
-              page.timeOutLogs=setTimeout(() => {
-                page.getLogs();
-              }, 5000);
-            } else {
-              //done
-              page.setState({"selfTestRunning":false,"selfTestIsDone":true,"hasSelfTest":true});
-            }
-          } else {
-            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
-                deleteStorage("jwt");
-                page.setState({"redirectToLogin":true});
-            }
-
-          }
-
-          })
-          .catch(function (error) {
-
-          });
-    }
-  }
-  */
 
   startSelfTest() {
     var { selfTestRunning } = this.state;
@@ -277,7 +195,7 @@ class CalibrationPage extends Component {
 
 
                              <ul className="small">
-                               <li>Running it can take up to 1 hour, and your miner will not work in the pools you have specified.</li>
+                               <li>Running it can take up to 1 hour and 20 minutes, and your miner will not work in the pools you have specified.</li>
                                <li>Please, once you have started this process, do not turn off, restart or change the pools of your miner.</li>
                              </ul>
 
@@ -288,15 +206,12 @@ class CalibrationPage extends Component {
                                   </div>
                                   <div className="col-md-9">
                                     <div className="progress">
-                                       <div className="progress-bar" role="progressbar" style={{width: selfTestProgress + "%"}} aria-valuenow={selfTestProgress} aria-valuemin="0" aria-valuemax="100">{selfTestProgress}%</div>
+                                       <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style={{width: selfTestProgress + "%"}} aria-valuenow={selfTestProgress} aria-valuemin="0" aria-valuemax="100">{selfTestProgress}%</div>
                                     </div>
                                   </div>
                                </div>
                              }
 
-                             {!selfTestIsDone &&
-                               <p className="h6">Are you sure you want to start calibration now?</p>
-                             }
 
                              {selfTestError != "" &&
                                 <div className="alert alert-warning small mt-4">
