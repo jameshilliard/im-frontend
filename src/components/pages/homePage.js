@@ -197,7 +197,14 @@ class Homepage extends Component {
                      </thead>
                      <tbody id="bodyPools">
                      {pools.map(pool => (
-                       <tr key={pool.POOL}><td>{parseInt(pool.POOL)+1}</td><td>{pool.URL}</td><td>{pool.User}</td><td>{pool.Status==="Alive" ? <span className="badge badge-success font-normal">Alive</span>:<span className="badge badge-warning font-normal">Dead</span>}</td><td>{pool.Getworks}</td><td>{pool.Accepted}/{pool.Rejected}</td></tr>
+                       <tr key={pool.POOL}>
+                        <td>{parseInt(pool.POOL)+1}</td>
+                        <td>{pool.URL}</td>
+                        <td className="text-break">{pool.User}</td>
+                        <td>{pool.Status==="Alive" ? <span className="badge badge-success font-normal">Alive</span>:<span className="badge badge-warning font-normal">Dead</span>}</td>
+                        <td>{pool.Getworks}</td>
+                        <td>{pool.Accepted}/{pool.Rejected}</td>
+                       </tr>
                      ))}
                      </tbody>
                    </table>
