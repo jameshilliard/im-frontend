@@ -423,39 +423,47 @@ class Upgradepage extends Component {
                         <h6 className="mt-4">Current Version
                         {latestFirmware.isUpdated && <span className="badge badge-success small ml-2">Updated</span>}
                         {!latestFirmware.isUpdated && <span className="badge badge-warning small ml-2">Not Updated</span>}</h6>
-                        <div className="row mt-2">
-                           <div className="col-md-4 field-title">
-                             Current Version
-                           </div>
-                           <div className="col-md-8 field-value">
-                             {latestFirmware.currentVersion}<br/>{latestFirmware.currentVersionDate}
-                           </div>
+                        {!latestFirmware.isUpdated &&
+                         <div>
+                            <div className="row mt-2">
+                               <div className="col-md-4 field-title">
+                                 Current Version
+                               </div>
+                               <div className="col-md-8 field-value">
+                                 {latestFirmware.currentVersion}<br/>{latestFirmware.currentVersionDate}
+                               </div>
+                            </div>
+                            <div className="row mt-2">
+                               <div className="col-md-4 field-title">
+                                 Latest Version
+                               </div>
+                               <div className="col-md-8 field-value">
+                                 {latestFirmware.version}<br/>{latestFirmware.versionDate}
+                               </div>
+                            </div>
+                            <div className="row mt-2">
+                               <div className="col-md-4 field-title">
+                                  Download Link
+                               </div>
+                               <div className="col-md-8 field-value">
+                                  <a href={latestFirmware.url} target="_blank" title="Download Now">Download Now</a>
+                               </div>
+                            </div>
+                            <div className="row mt-2">
+                               <div className="col-md-4 field-title">
+                                  Version Information
+                               </div>
+                               <div className="col-md-8 field-value">
+                                  {latestFirmware.info}
+                               </div>
+                            </div>
                         </div>
-                        <div className="row mt-2">
-                           <div className="col-md-4 field-title">
-                             Latest Version
-                           </div>
-                           <div className="col-md-8 field-value">
-                             {latestFirmware.version}<br/>{latestFirmware.versionDate}
-                           </div>
-                        </div>
-                        <div className="row mt-2">
-                           <div className="col-md-4 field-title">
-                              Download Link
-                           </div>
-                           <div className="col-md-8 field-value">
-                              <a href={latestFirmware.url} target="_blank" title="Download Now">Download Now</a>
-                           </div>
-                        </div>
-                        <div className="row mt-2">
-                           <div className="col-md-4 field-title">
-                              Version Information
-                           </div>
-                           <div className="col-md-8 field-value">
-                              {latestFirmware.info}
-                           </div>
-                        </div>
-
+                        }
+                        {latestFirmware.isUpdated &&
+                          <div className="alert alert-info">
+                            No updates available
+                          </div>
+                        }
                     </div>
                    }
 
