@@ -44,7 +44,9 @@ class App extends Component {
         apiSelfTestLogs: "/api/getSelfTestLog",
         apiHasAgeing: "/api/hasAgeing",
         apiSetAutoTune: "/api/setAutoTune",
-        apiLatestFirmwareVersion: "/api/getLatestFirmwareVersion"
+        apiLatestFirmwareVersion: "/api/getLatestFirmwareVersion",
+        apiHashRates: "/api/getHashRates",
+        apiDebug: "/api/getDebugStats"
     };
   }
 

@@ -20,18 +20,28 @@ export function deleteStorage(name) {
   }
 }
 
-export function add0(m){return m<10?'0'+m:m }
 export function formatUpTime(timestamp)
 {
     var time = new Date(timestamp);
-    var days=Math.floor(time/(24*3600*1000));//总共小时数
-    var leave1=time%(24*3600*1000);    //计算天数后剩余的毫秒数
-    var hours=Math.floor(leave1/(3600*1000));//总共小时数
-    var leave2=leave1%(3600*1000);       //计算小时数后剩余的毫秒数
+    var days=Math.floor(time/(24*3600*1000));
+    var leave1=time%(24*3600*1000);
+    var hours=Math.floor(leave1/(3600*1000));
+    var leave2=leave1%(3600*1000);
     var minutes=Math.floor(leave2/(60*1000));
     var leave3=leave2%(60*1000);
     var seconds=Math.round(leave3/1000);
-    return add0(days)+'d '+add0(hours)+'h '+add0(minutes)+'m '+add0(seconds)+'s';
+    var daysText="";
+    var hoursText="";
+    var minutesText="";
+    if (days>0)
+      daysText=days+'d ';
+    if (hours>0)
+      hoursText=hours+'h ';
+    if (minutes>0)
+      minutesText=minutes+'m';
+    if (days==0&&hours==0&&minutes==0&&seconds>0)
+        return seconds+'s'
+    return daysText+hoursText+minutesText;
 }
 
 export function convertHashRate(hashRate) {

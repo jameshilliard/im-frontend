@@ -20,6 +20,7 @@ import Loginpage from '../../components/pages/loginPage';
 import Resetpage from '../../components/pages/resetPage';
 import Profilepage from '../../components/pages/profilePage';
 import CalibrationPage from '../../components/pages/calibrationPage';
+import DebugPage from '../../components/pages/debugPage';
 
 class Wrapper extends Component {
 
@@ -110,8 +111,8 @@ class Wrapper extends Component {
 
 
                     <ul className="list-unstyled components">
-                        <li><NavLink to="/" exact={true} activeClassName="active"><i className="fa fa-dashboard"></i>&nbsp;&nbsp; Miner Status</NavLink></li>
-                        <li><a href="#settingSubmenu" data-toggle="collapse" aria-expanded="false"><i className="fa fa-gear"></i>&nbsp;&nbsp; Settings</a>
+                        <li><NavLink to="/" exact={true} activeClassName="active"><i className="fa fa-tachometer-alt"></i>&nbsp;&nbsp; Miner Status</NavLink></li>
+                        <li><a href="#settingSubmenu" data-toggle="collapse" aria-expanded="false"><i className="fa fa-cogs"></i>&nbsp;&nbsp; Settings</a>
                             <Route path="/:path(pools|security|network|profile)" children={({ match }) => (
                               <ul className={match===null ? 'collapse list-unstyled':'list-unstyled'} id="settingSubmenu">
                                 <li><NavLink to="/pools" activeClassName="active">Pools</NavLink></li>
@@ -130,7 +131,7 @@ class Wrapper extends Component {
                             </ul>)} />
                         </li>}
                         <li><NavLink to="/overview" activeClassName="active"><i className="fa fa-microchip"></i>&nbsp;&nbsp; Overview</NavLink></li>
-                        <li><a href="#" onClick={this.logout}><i className="fa fa-sign-out"></i>&nbsp;&nbsp; Logout</a></li>
+                        <li><a href="#" onClick={this.logout}><i className="fa fa-sign-out-alt"></i>&nbsp;&nbsp; Logout</a></li>
                     </ul>
                 </nav>
 
@@ -169,7 +170,8 @@ class Wrapper extends Component {
                         <Route exact path='/overview' component={OverViewpage} />
                         <Route exact path='/reset' component={Resetpage} />
                         <Route exact path='/profile' component={Profilepage} />
-                        <Route exact path='/selfTest' component={CalibrationPage} />
+                        <Route exact path='/calibration' component={CalibrationPage} />
+                        <Route exact path='/debug' component={DebugPage} />
                     </div>
                     {/* ./ Page content */}
                 </div>

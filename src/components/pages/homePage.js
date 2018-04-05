@@ -4,7 +4,7 @@ import {formatUpTime,convertHashRate} from '../lib/utils'
 import { withRouter, Redirect } from 'react-router-dom';
 import queryString from 'query-string';
 import {getStorage,setStorage,deleteStorage,generateUrlEncoded} from '../lib/utils'
-
+import {Line} from 'react-chartjs-2';
 
 class Homepage extends Component {
 
@@ -26,7 +26,10 @@ class Homepage extends Component {
       "isLoaded": false,
       "isRestarting": isRestarting,
       "isRebooting": isRebooting,
-      "redirectToLogin":false
+      "redirectToLogin":false,
+      "hashRatesDataSets": [],
+      "hashRatesTimes": [],
+      "showGraph": false
     };
 
   }
@@ -34,7 +37,7 @@ class Homepage extends Component {
 
   componentDidMount() {
     this.loadInfo();
-
+    this.loadHashRates();
   }
 
   componentWillUnmount() {
@@ -42,6 +45,107 @@ class Homepage extends Component {
       clearTimeout(this.timeOutReload);
     if (typeof this.timeOutLoad !== 'undefined')
       clearTimeout(this.timeOutLoad);
+    if (typeof this.timeOutHashRates !== 'undefined')
+      clearTimeout(this.timeOutHashRates);
+  }
+
+  loadHashRates() {
+    var colors=["#03a9f3","#20c997","#bc2929","#6c757d","#ab8ce4","#01c0c8","#fec107","#6610f2"];
+    var token=getStorage("jwt");
+    if (token===null) {
+      this.setState({"redirectToLogin":true});
+    } else {
+      var page=this;
+      var postData = {
+
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiHashRates,postData,axiosConfig)
+
+      .then(res => {
+
+        if (res.data.success==true) {
+
+          var dataSets=[];
+          var hashRatesTotal=[];
+          var times=[];
+          var showGraph=false;
+          if (res.data.stats) {
+            var i=1;
+            res.data.stats.forEach(function(chain)  {
+              var dataSet={
+                  label: 'Chain '+i,
+                  data: chain,
+                  fill: false,
+                  borderWidth: 2,
+                  borderColor: colors[i-1],
+                  pointHoverBackgroundColor: colors[i-1],
+                  pointHoverBorderColor: colors[i-1]
+              };
+              dataSets.push(dataSet);
+              i++;
+
+              if (chain!=null) {
+                if (chain.length>2)
+                  showGraph=true;
+                for(var j=0;j<chain.length;j++) {
+                  if ( hashRatesTotal[j] !== void 0 ) {
+                    hashRatesTotal[j]+=chain[j];
+                  } else {
+                    hashRatesTotal[j]=chain[j];
+                  }
+                }
+              }
+            });
+            var dataSetTotal={
+                label: 'Total',
+                data: hashRatesTotal,
+                fill: false,
+                borderColor: "#f57e22",
+                pointHoverBackgroundColor: "#f57e22",
+                pointHoverBorderColor: "#f57e22"
+            };
+            dataSets.push(dataSetTotal);
+
+          }
+          if (res.data.times) {
+            res.data.times.forEach(function(time)  {
+              var date=new Date(time*1000);
+              date.setSeconds(0,0);
+              times.push(date);
+            });
+
+          }
+         page.setState({"hashRatesDataSets":dataSets,"hashRatesTimes":times,"showGraph":showGraph});
+
+
+          page.timeOutHashRates=setTimeout(() => {
+            page.loadHashRates();
+          }, 30000);
+
+        } else if (res.data.success==false) {
+
+          if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+              deleteStorage("jwt");
+              page.setState({"redirectToLogin":true});
+          } else {
+            page.timeOutHashRates=setTimeout(() => {
+              page.loadHashRates();
+            }, 30000);
+          }
+
+        }
+      })
+      .catch(function (error) {
+        page.timeOutHashRates=setTimeout(() => {
+          page.loadHashRates();
+        }, 30000);
+      });
+    }
   }
 
   loadInfo() {
@@ -119,11 +223,56 @@ class Homepage extends Component {
 
 
   render() {
-    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin } = this.state;
+    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph } = this.state;
 
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
     }
+
+    var hashRatesData={
+        labels: hashRatesTimes,
+        datasets: hashRatesDataSets
+    };
+
+
+
+    var options={
+      tooltips: {
+        callbacks: {
+            label: function(tooltipItem, data) {
+                return " "+convertHashRate(tooltipItem.yLabel);
+            }
+        }
+      },
+      maintainAspectRatio: false,
+      elements: {
+          point: {
+              radius: 0
+          }
+      },
+      scales: {
+        xAxes: [{
+          type: 'time',
+          time: {
+            unit: "hour"
+          }
+        }],
+        yAxes: [
+            {
+                ticks: {
+                    callback: function(label, index, labels) {
+                        return convertHashRate(label);
+                    }
+                }
+            }
+        ]
+      }
+
+    };
+
+
+
+    var loadAcceptedRejected=(typeof summary.accepted !== 'undefined');
 
     return (
       <div className="Homepage">
@@ -143,38 +292,106 @@ class Homepage extends Component {
       }
 
       {/* Box Summary */}
-
       <div className="row mt-5">
          <div className="col-md-12">
-           <div className="box">
-               <div className="box-header">
-                 <h3>Summary {!isLoaded && <div className="lds-dual-ring pull-right"></div>}</h3>
+              <div className="row">
+
+               <div className="col-lg-5 col-md-12 dashboard-cards">
+                  <div className="row">
+                      <div className="col-md-6 col-sm-6">
+                        {/* card uptime */ }
+                        <div className="m-2 card orange">
+                          <div className="card-body">
+                            {!summary.upTime && <div className="lds-dual-ring"></div>}
+                            {summary.upTime && <p className="card-text">{formatUpTime(summary.upTime)}</p>}
+                          </div>
+                          <div className="card-footer">
+                             <h5 className="card-title"> <i className="fa fa-clock"></i> up time</h5>
+                          </div>
+                        </div>{/* .card uptime */ }
+                      </div>
+                      <div className="col-md-6 col-sm-6">
+                      {/* card Accepted */ }
+                      <div className="m-2 card green">
+                        <div className="card-body">
+                          {loadAcceptedRejected==true &&
+                              <p className="card-text">
+                              {Number(summary.accepted/(summary.rejected+summary.accepted)*100).toFixed(1)}%
+                              <span className="ml-1 small">({summary.accepted}/{summary.rejected})</span>
+                              </p>
+                          }
+
+                          {!loadAcceptedRejected && <div className="lds-dual-ring"></div>}
+
+                        </div>
+                        <div className="card-footer">
+                           <h5 className="card-title"> <i className="fa fa-tachometer-alt"></i> accepted rate</h5>
+                        </div>
+                      </div>{/* .card Accepted */ }
+                      </div>
+                  </div>
+                  <div className="row mt-lg-4">
+                      <div className="col-md-6 col-sm-6">
+                        {/* card HW */ }
+                        <div className="m-2 card red">
+                          <div className="card-body">
+                            {!summary.mHs && <div className="lds-dual-ring"></div>}
+                            {summary.mHs &&
+                            <p className="card-text">
+                              {convertHashRate(summary.mHs)}
+                            </p>
+                            }
+                          </div>
+                          <div className="card-footer">
+                             <h5 className="card-title"> <i className="fa fa-tachometer-alt"></i> hash rate</h5>
+                          </div>
+                        </div>{/* .card HW */ }
+                      </div>
+                      <div className="col-md-6 col-sm-6">
+                      {/* card HW */ }
+                      <div className="m-2 card blue">
+                        <div className="card-body">
+                          {!summary.fansSpeed && <div className="lds-dual-ring"></div>}
+                          {summary.fansSpeed &&
+                          <p className="card-text">
+                           {summary.fansSpeed+"%"}
+                          </p>
+                          }
+                        </div>
+                        <div className="card-footer">
+                           <h5 className="card-title"> <i className="fa fa-asterisk"></i> fan speed</h5>
+                        </div>
+                      </div>{/* .card HW */ }
+                      </div>
+                  </div>
                </div>
 
-               <div className="box-body">
-                 <div className="table-responsive">
-                   <table className="table">
-                     <thead>
-                       <tr>
-                         <th scope="col">Running Time</th>
-                         <th scope="col">Hash Rate</th>
-                         <th scope="col">Accepted / Rejected</th>
-                         <th scope="col">HW</th>
-                         <th scope="col">Fan Speed</th>
-                       </tr>
-                     </thead>
-                     <tbody id="bodyMinerStatus">
-                     {isLoaded &&
-                     <tr><td>{formatUpTime(summary.upTime)}</td><td>{convertHashRate(summary.mHs)}</td><td>{summary.accepted}/{summary.rejected}</td><td>{summary.hwErrors}</td><td>{summary.fansSpeed}%</td></tr>
-                     }
-                     </tbody>
-                   </table>
-                 </div>
+               <div className="col-lg-7 col-md-12 mt-2">
+                 {showGraph &&
+                  <div className="box">
+                    <div className="box-body">
+
+                      <Line data={hashRatesData} options={options} height={268}/>
+
+
+                    </div>
+                  </div>
+                  }
+                  {!showGraph &&
+                    <div className="alert alert-info m-5">
+                      <h4 className="alert-heading">Hash Rate Graph</h4>
+                      <p>No data available to show</p>
+                      <hr />
+                      <p className="mb-0">the graph will load automatically once the miner have data to show</p>
+                    </div>
+                  }
                </div>
-             </div>
-         </div>
-      </div>
-      {/* ./Box Summary */}
+              </div>
+       </div>{/* ./col */}
+    </div>{/* ./row */}
+
+
+
       {/* Box Pools */}
       <div className="row mt-5">
          <div className="col-md-12">

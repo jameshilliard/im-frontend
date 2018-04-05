@@ -157,10 +157,15 @@ class Profilepage extends Component {
                     </div>
 
 
+
+
+
                  </div>
                  <div className="box-footer clearfix">
-                      <button disabled={!formChanged||saving} className="btn btn-primary float-left" onClick={this.handleSubmit}>Save {saving && <div className="btn-loader lds-dual-ring"></div>}</button>
-                      <Link to={'/calibration'} className="float-right"><button className="btn btn-secondary">Run Calibrate</button></Link>
+                      <button disabled={!formChanged||saving} className="btn btn-primary pull-left" onClick={this.handleSubmit}>Save {saving && <div className="btn-loader lds-dual-ring"></div>}</button>
+                      <Link to={'/calibration'} className="pull-right"><button className="btn btn-secondary">Run Calibrate</button></Link>
+
+
                  </div>
            </div>
          </div>
