@@ -90,7 +90,7 @@ class Homepage extends Component {
               i++;
 
               if (chain!=null) {
-                if (chain.length>2)
+                if (chain.length>1)
                   showGraph=true;
                 for(var j=0;j<chain.length;j++) {
                   if ( hashRatesTotal[j] !== void 0 ) {
@@ -247,7 +247,9 @@ class Homepage extends Component {
       maintainAspectRatio: false,
       elements: {
           point: {
-              radius: 0
+              radius: 0,
+              hitRadius: 5,
+              hoverRadius: 5
           }
       },
       scales: {
