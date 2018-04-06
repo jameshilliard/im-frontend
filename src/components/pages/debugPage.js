@@ -92,22 +92,44 @@ class Debugpage extends Component {
                            Show Chips
                     </button>
                     <div className="collapse small" id={"collapse"+index}>
-                      <div className="card card-body mt-2">
-                        <div className="row">
+
+                        <table className="table table-striped mt-2">
+                            <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">HW errors</th>
+                                <th scope="col">Stales</th>
+                                <th scope="col">Nonces found</th>
+                                <th scope="col">Nonce ranges</th>
+                                <th scope="col">Cooldown</th>
+                                <th scope="col">Fail count</th>
+                                <th scope="col">Fail reset</th>
+                                <th scope="col">Temp</th>
+                                <th scope="col">Vol</th>
+                                <th scope="col">PLL</th>
+                                <th scope="col">Pll Optimal</th>
+                            </tr>
+                            </thead>
+                            <tbody>
                             {item.chips.map((chip, indexChip) => (
-                              <div className="col-md-6" key={indexChip}>
-                                <h5>Chip {indexChip+1}</h5>
-                                <ul>
-                                {Object.keys(chip).map(function(key) {
-                                  return <li key={key}>
-                                   <b>{key}:</b> {chip[key]!==false&&chip[key]}{chip[key]===false&&"false"}
-                                 </li>
-                                })}
-                                </ul>
-                              </div>
+                                <tr key={indexChip}>
+                                  <td>{indexChip+1}</td>
+                                  <td>{chip["HW errors"]}</td>
+                                  <td>{chip["Stales"]}</td>
+                                  <td>{chip["Nonces found"]}</td>
+                                  <td>{chip["Nonce ranges"]}</td>
+                                  <td>{chip["Cooldown"]}</td>
+                                  <td>{chip["Fail count"]}</td>
+                                  <td>{chip["Fail reset"]}</td>
+                                  <td>{chip["Temp"]}</td>
+                                  <td>{chip["nVol"]}</td>
+                                  <td>{chip["PLL"]}</td>
+                                  <td>{chip["pllOptimal"]?chip["pllOptimal"]:"false"}</td>
+                                </tr>
                             ))}
-                        </div>
-                      </div>
+                            </tbody>
+                        </table>
+
                     </div>
 
                   </div>
