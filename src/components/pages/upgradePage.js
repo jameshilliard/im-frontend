@@ -33,9 +33,13 @@ class Upgradepage extends Component {
         errorCheckingLatestFirmware: ""
     };
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.reboot = this.reboot.bind(this);
     this.checkLatestFirmware = this.checkLatestFirmware.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+  }
+
+  componentWillUnmount() {
+    if (typeof this.timeOutLoad !== 'undefined')
+      clearTimeout(this.timeOutLoad);
   }
 
   componentDidMount() {
@@ -81,6 +85,7 @@ class Upgradepage extends Component {
         break
       case 'SUCCESS':
         this.setState({"upgraded":true,"upgrading":false});
+        this.checkMiner();
         break
       case 'FAILURE':
         this.setState({"upgrading":false});
@@ -130,8 +135,6 @@ class Upgradepage extends Component {
                   break
                 case 'status':
                   comp.updateStatus(msg.status);
-
-
                   break
                 case 'source':
                   break
@@ -146,9 +149,6 @@ class Upgradepage extends Component {
 
             this.setState({upgrading:true,errorMessage:""});
             var fd = new FormData();
-
-
-            //fd.append("keepsettings", this.state.keepSettings);
             fd.append("upfile", this.fileInput.files[0]);
 
             axios.post(window.customVars.urlPrefix+window.customVars.apiUpgrade, fd, config)
@@ -158,8 +158,6 @@ class Upgradepage extends Component {
                 }
             })
             .catch(function (error) {
-
-
                 if (error.response&&error.response.status == 401) {
                   deleteStorage("jwt");
                   comp.setState({"redirectToLogin":true});
@@ -176,39 +174,43 @@ class Upgradepage extends Component {
 
   }
 
-  reboot(event) {
-    event.preventDefault();
+  checkMiner() {
+    var page=this;
     var token=getStorage("jwt");
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-      this.setState({"rebooting":true});
+        var postData = {
 
-      var postData = {
-
-      };
-      let axiosConfig = {
-        headers: {
-            'Authorization': 'Bearer ' + token
-        }
-      };
-      axios.post(window.customVars.urlPrefix+window.customVars.apiReboot,postData,axiosConfig)
-      .then(res => {
-          if (res.data.success==false&&(typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
-              deleteStorage("jwt");
-              this.setState({"redirectToLogin":true});
+        };
+        let axiosConfig = {
+          headers: {
+              'Authorization': 'Bearer ' + token
           }
-      })
-      .catch(function (error) {
+        };
+        axios.post(window.customVars.urlPrefix+window.customVars.apiPing,postData,axiosConfig)
+        .then(res => {
+          if (res.data.success) {
+            page.timeOutLoad=setTimeout(() => {
+              page.checkMiner();
+            }, 5000);
+          } else {
+            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+                deleteStorage("jwt");
+                page.setState({"redirectToLogin":true});
+            }
+          }
 
-      });
-      var comp=this;
-      setTimeout(() => {
-        comp.setState({"redirectToIndex":true});
-      }, 4000);
+          })
+          .catch(function (error) {
+            page.timeOutLoad=setTimeout(() => {
+              page.checkMiner();
+            }, 5000);
+          });
     }
 
   }
+
 
   checkLatestFirmware(event) {
     event.preventDefault();
@@ -386,16 +388,24 @@ class Upgradepage extends Component {
                                 </div>
                               </div>
 
+
+
+
                               {upgraded &&
-                              <div className="alert alert-success small mt-4">
-                                The firmware has been upgraded, rebooting the miner...
-                              </div>
+                              <div className="alert alert-info small" role="alert">
+                                 <h4 className="alert-heading">Rebooting <div className="btn-loader lds-dual-ring"></div></h4>
+                                 The firmware has been upgraded and the miner is rebooting. You will be redirected to login page once miner has started.
+                                 <hr/>
+                                 <p className="mb-0">Please wait...</p>
+                               </div>
                               }
 
                            </div>
                           }
 
                    </div>
+
+
 
 
                    {!upgraded &&
@@ -420,7 +430,7 @@ class Upgradepage extends Component {
                    {latestFirmware &&
                      <div>
 
-                        <h6 className="mt-4">Current Version
+                        <h6 className="mt-4">Installed Version
                         {latestFirmware.isUpdated && <span className="badge badge-success small ml-2">Updated</span>}
                         {!latestFirmware.isUpdated && <span className="badge badge-warning small ml-2">Not Updated</span>}</h6>
                         {!latestFirmware.isUpdated &&

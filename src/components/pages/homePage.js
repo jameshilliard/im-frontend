@@ -273,8 +273,13 @@ class Homepage extends Component {
     };
 
 
-
+    var acceptedRate=0;
     var loadAcceptedRejected=(typeof summary.accepted !== 'undefined');
+    if (loadAcceptedRejected) {
+      var tempAcceptedRate=(summary.accepted/(summary.rejected+summary.accepted)*100).toFixed(1);
+      acceptedRate=(tempAcceptedRate==100?100:tempAcceptedRate);
+
+    }
 
     return (
       <div className="Homepage">
@@ -318,7 +323,7 @@ class Homepage extends Component {
                         <div className="card-body">
                           {loadAcceptedRejected==true &&
                               <p className="card-text">
-                              {Number(summary.accepted/(summary.rejected+summary.accepted)*100).toFixed(1)}%
+                              {acceptedRate}%
                               <span className="ml-1 small">({summary.accepted}/{summary.rejected})</span>
                               </p>
                           }
