@@ -36,10 +36,10 @@ class Profilepage extends Component {
               'Authorization': 'Bearer ' + token
           }
         };
-        axios.post(window.customVars.urlPrefix+window.customVars.apiHasAgeing,postData,axiosConfig)
+        axios.post(window.customVars.urlPrefix+window.customVars.apiGetAutoTune,postData,axiosConfig)
         .then(res => {
           if (res.data.success === true) {
-            page.setState({"isLoaded":true,"hasAutoTune":res.data.hasAutoTune,"hasAutoTuneDefault":res.data.ageing});
+            page.setState({"isLoaded":true,"hasAutoTune":res.data.hasAutoTune,"hasAutoTuneDefault":res.data.hasAutoTune});
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
