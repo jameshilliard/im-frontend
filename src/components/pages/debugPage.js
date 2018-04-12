@@ -111,7 +111,7 @@ class Debugpage extends Component {
                     <div className="row small">
                         {Object.keys(item.board).map(function(key) {
                           return <div className="col-md-6" key={key}>
-                           <b>{key}:</b> {item.board[key]!==false&&item.board[key]}{item.board[key]===false&&"false"}
+                           <b>{key}:</b> {item.board[key]!==false && item.board[key] }{item.board[key]===false&&"false"}{item.board[key]===true&&"true"}
                          </div>
                         })}
                     </div>

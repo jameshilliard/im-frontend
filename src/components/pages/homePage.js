@@ -29,7 +29,8 @@ class Homepage extends Component {
       "redirectToLogin":false,
       "hashRatesDataSets": [],
       "hashRatesTimes": [],
-      "showGraph": false
+      "showGraph": false,
+      "isTuning": false
     };
 
   }
@@ -181,7 +182,7 @@ class Homepage extends Component {
             accepted+=parseInt(chain["Accepted"]);
             rejected+=parseInt(chain["Rejected"]);
             hwErrors+=parseInt(chain["Hardware Errors"]);
-            mHs+=parseFloat(chain["MHS av"]);
+            mHs+=parseFloat(chain["Hash Rate"]);
           });
           const summary = {"accepted":accepted,"rejected": rejected, "hwErrors":hwErrors, "mHs":mHs, "upTime":upTime, "fansSpeed":fansSpeed}
           const pools = res.data.POOLS;
@@ -191,7 +192,8 @@ class Homepage extends Component {
             summary: summary,
             isLoaded: true,
             isRestarting: false,
-            isRebooting:false
+            isRebooting:false,
+            isTuning: res.data.tuning
           });
 
           page.timeOutReload=setTimeout(() => {
@@ -223,7 +225,7 @@ class Homepage extends Component {
 
 
   render() {
-    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph } = this.state;
+    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph,isTuning } = this.state;
 
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
@@ -301,6 +303,15 @@ class Homepage extends Component {
       {/* Box Summary */}
       <div className="row mt-5">
          <div className="col-md-12">
+              {isTuning &&
+              <div className="row">
+                <div className="col-md-12">
+                  <div className="alert alert-warning">
+                    <div className="ml-2 lds-dual-ring small pt-1"></div> Please note the miner is autotuning, hashrate may vary until completion!
+                  </div>
+                </div>
+              </div>
+              }
               <div className="row">
 
                <div className="col-lg-5 col-md-12 dashboard-cards">
@@ -387,9 +398,7 @@ class Homepage extends Component {
                   {!showGraph &&
                     <div className="alert alert-info m-5">
                       <h4 className="alert-heading">Hash Rate Graph</h4>
-                      <p>No data available to show</p>
-                      <hr />
-                      <p className="mb-0">the graph will load automatically once the miner have data to show</p>
+                      <p>Gathering data: graph will display shortly</p>
                     </div>
                   }
                </div>
@@ -461,7 +470,7 @@ class Homepage extends Component {
                     <tbody id="bodyMinerInfo">
                     {chains.map(chain => (
                       <tr key={chain.ASC}><td>{parseInt(chain.ASC)+1}</td>
-                      <td>{convertHashRate(chain["MHS av"])}</td>
+                      <td>{convertHashRate(chain["Hash Rate"])}</td>
                       <td>{chain.Status==="Alive" ? <span className="badge badge-success font-normal">Alive</span>:<span className="badge badge-warning font-normal">Dead</span>}</td>
                       <td>{chain.Accepted}/{chain.Rejected}</td>
                       <td>{chain["Hardware Errors"]}</td>

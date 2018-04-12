@@ -19,7 +19,7 @@ import Advancedpage from '../../components/pages/advancedPage';
 import Loginpage from '../../components/pages/loginPage';
 import Resetpage from '../../components/pages/resetPage';
 import Profilepage from '../../components/pages/profilePage';
-import CalibrationPage from '../../components/pages/calibrationPage';
+
 import DebugPage from '../../components/pages/debugPage';
 
 class Wrapper extends Component {
@@ -170,7 +170,6 @@ class Wrapper extends Component {
                         <Route exact path='/overview' component={OverViewpage} />
                         <Route exact path='/reset' component={Resetpage} />
                         <Route exact path='/profile' component={Profilepage} />
-                        <Route exact path='/calibration' component={CalibrationPage} />
                         <Route exact path='/debug' component={DebugPage} />
                     </div>
                     {/* ./ Page content */}

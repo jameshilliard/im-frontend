@@ -424,7 +424,7 @@ class Upgradepage extends Component {
                  <h3>Latest Firmware</h3>
                </div>
                    <div className="box-body p-4 small">
-                    Check the latest firmware avaialble for your miner!
+                    Check for firmware updates.
 
 
                    {latestFirmware &&

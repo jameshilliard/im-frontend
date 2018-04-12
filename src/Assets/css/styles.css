@@ -635,3 +635,9 @@ input:checked + .slider:before {
 .dashboard-cards .card.orange .card-footer {
   background-color: #f57e22;
 }
+/* ---------------------------------------------------
+    DASHBOARD
+----------------------------------------------------- */
+.rangeslider__fill {
+  background-color: #e6e6e6 !important;
+}

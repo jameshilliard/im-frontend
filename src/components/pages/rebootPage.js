@@ -13,15 +13,19 @@ class Rebootpage extends Component {
 
     this.state = {
       "rebooting":false,
-      "redirectToIndex":false,
       "redirectToLogin":false
     };
     this.handleSubmit = this.handleSubmit.bind(this);
 
   }
 
+  componentWillUnmount() {
+    if (typeof this.timeOutLoad !== 'undefined')
+      clearTimeout(this.timeOutLoad);
+  }
 
   handleSubmit(event) {
+    var page=this;
     event.preventDefault();
     var token=getStorage("jwt");
     if (token===null) {
@@ -39,59 +43,67 @@ class Rebootpage extends Component {
       };
       axios.post(window.customVars.urlPrefix+window.customVars.apiReboot,postData,axiosConfig)
       .then(res => {
-          if (res.data.success==false&&(typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
-              deleteStorage("jwt");
-              this.setState({"redirectToLogin":true});
+          if (res.data.success) {
+            page.timeOutLoad=setTimeout(() => {
+              page.checkMiner();
+            }, 5000);
+          } else {
+            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+                deleteStorage("jwt");
+                this.setState({"redirectToLogin":true});
+            }
           }
       })
       .catch(function (error) {
 
       });
-      var comp=this;
-      setTimeout(() => {
-        comp.setState({"redirectToIndex":true});
-      }, 4000);
+
     }
 
   }
 
   componentDidMount() {
+    this.checkMiner();
+  }
 
+  checkMiner() {
     var page=this;
     var token=getStorage("jwt");
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-        var postData = {
+      var postData = {
 
-        };
-        let axiosConfig = {
-          headers: {
-              'Authorization': 'Bearer ' + token
+      };
+      let axiosConfig = {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+      };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiPing,postData,axiosConfig)
+      .then(res => {
+        if (res.data.success) {
+          page.timeOutLoad=setTimeout(() => {
+            page.checkMiner();
+          }, 5000);
+        } else {
+          if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+              deleteStorage("jwt");
+              page.setState({"redirectToLogin":true});
           }
-        };
-        axios.post(window.customVars.urlPrefix+window.customVars.apiPing,postData,axiosConfig)
-        .then(res => {
-          if (!res.data.success) {
-            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
-                deleteStorage("jwt");
-                page.setState({"redirectToLogin":true});
-            }
-          }
+        }
 
-          })
-          .catch(function (error) {
-
-          });
+        })
+        .catch(function (error) {
+          page.timeOutLoad=setTimeout(() => {
+            page.checkMiner();
+          }, 5000);
+        });
     }
-
   }
 
   render() {
-    const { rebooting, redirectToIndex,redirectToLogin } = this.state;
-    if (redirectToIndex) {
-      return <Redirect to="/?rebooting" />;
-    }
+    const { rebooting,redirectToLogin } = this.state;
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
     }
@@ -112,7 +124,7 @@ class Rebootpage extends Component {
                    <div className="box-body p-4">
 
                        <div className="alert alert-info">
-                           <p>This web interface will became unavailable after your press the Reboot button. Please wait until the reboot cycle complete.</p>
+                           <p>This web interface will became unavailable after your press the Reboot button. Please wait until the reboot cycle completes.</p>
                        </div>
 
                    </div>

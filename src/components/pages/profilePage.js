@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import {generateUrlEncoded,getStorage,deleteStorage} from '../lib/utils'
 import { Redirect, Link } from 'react-router-dom';
+import 'react-rangeslider/lib/index.css'
+import Slider from 'react-rangeslider'
 
 class Profilepage extends Component {
 
@@ -11,14 +13,12 @@ class Profilepage extends Component {
     this.state = {
       "alertMessage": "",
       "isLoaded": false,
-      "hasAutoTune": false,
-      "hasAutoTuneDefault": true,
+      "sliderValue": 1,
       "redirectToLogin": false,
       "saving": false,
       "formChanged": false
     };
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
   componentDidMount() {
@@ -39,7 +39,15 @@ class Profilepage extends Component {
         axios.post(window.customVars.urlPrefix+window.customVars.apiGetAutoTune,postData,axiosConfig)
         .then(res => {
           if (res.data.success === true) {
-            page.setState({"isLoaded":true,"hasAutoTune":res.data.hasAutoTune,"hasAutoTuneDefault":res.data.hasAutoTune});
+            var sliderValue;
+            if (res.data.autoTuneMode=="off") {
+              sliderValue=-1;
+            } else if(res.data.autoTuneMode=="efficient") {
+              sliderValue=1;
+            } else if (res.data.autoTuneMode=="default") {
+              sliderValue=0;
+            }
+            page.setState({"isLoaded":true,"sliderValue":sliderValue,"sliderValueSetted":sliderValue});
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
@@ -57,15 +65,24 @@ class Profilepage extends Component {
 
 
   handleSubmit(event) {
-    var { hasAutoTune } = this.state;
+    var { sliderValue } = this.state;
     event.preventDefault();
     var token=getStorage("jwt");
     var page=this;
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
+      var mode="off";
+      if (sliderValue===0) {
+        mode="default";
+      } else if (sliderValue===1) {
+        mode="efficient";
+      }
+
+
+
       var params = new URLSearchParams();
-      params.append('autotune', hasAutoTune);
+      params.append('autotune', mode);
       let axiosConfig = {
         headers: {
             'Authorization': 'Bearer ' + token
@@ -75,7 +92,7 @@ class Profilepage extends Component {
       axios.post(window.customVars.urlPrefix+window.customVars.apiSetAutoTune,params,axiosConfig)
       .then(res => {
         if (res.data.success === true) {
-          this.setState({"saving":false,"saved":true,"hasAutoTuneDefault":hasAutoTune,"formChanged":false});
+          this.setState({"saving":false,"saved":true,"sliderValueSetted":sliderValue,"formChanged":false});
         } else {
           if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
               deleteStorage("jwt");
@@ -91,28 +108,32 @@ class Profilepage extends Component {
     }
   }
 
-  componentWillUnmount() {
-    if (typeof this.timeOutLogs !== 'undefined')
-      clearTimeout(this.timeOutLogs);
-  }
 
-
-  handleInputChange(event) {
-   const target = event.target;
-   const value = target.type === 'checkbox' ? target.checked : target.value;
-   const name = target.name;
-   if (name=="autotune") {
-     var formChanged=(this.state.hasAutoTuneDefault!=value);
-     this.setState({"hasAutoTune":value,"formChanged":formChanged});
-   }
+  handleChange = (value) => {
+    this.setState({
+      sliderValue: value,
+      formChanged: (value!=this.state.sliderValueSetted)
+    })
   }
 
   render() {
-    var { alertMessage,isLoaded,hasAutoTune,redirectToLogin,saving,formChanged,saved } = this.state;
+    var { alertMessage,isLoaded,sliderValue,redirectToLogin,saving,formChanged,saved } = this.state;
+
+
+
 
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
     }
+
+    const horizontalLabels = {
+      "-1": 'Off',
+      "0": 'Default',
+      "1": 'Efficiency'
+    }
+
+
+
 
     return (
       <div className="Profilepage">
@@ -139,18 +160,25 @@ class Profilepage extends Component {
 
                    <div className="row">
                       <div className="col-md-12 text-center">
-                        <p className="small text-left">There are two modes for your miner</p>
+                        <p className="small text-left">There are 3 Auto Tune modes</p>
                         <ol className="small text-left">
-                          <li>Auto Tune Enabled: The miner will dynamically search the voltage and frequency values for your miner.</li>
-                          <li>Auto Tune Disabled (default value and recommended): The miner will work with the factory default values or the best values found during device calibration.</li>
+                          <li><strong>Off</strong> the miner will work with the factory default values</li>
+                          <li><strong>Default</strong> the miner will dynamically search the voltage and frequency values to achieve the highest hash rate</li>
+                          <li><strong>Efficiency</strong> the miner will use less power but the hash rate will be lower</li>
                         </ol>
 
-                        <h3 className="color-title">Auto tune: </h3>
-                        <label className="switch">
-                          <input disabled={!isLoaded} type="checkbox" checked={hasAutoTune} onChange={this.handleInputChange} name="autotune" />
-                          <span className="slider"></span>
-                        </label><br />
+                        <h3 className="color-title">Auto Tune Mode: </h3>
 
+                        <Slider
+                          min={-1}
+                          max={1}
+                          value={0}
+                          tooltip={false}
+                          value={sliderValue}
+                          onChange={this.handleChange}
+                          labels={horizontalLabels}
+                          className="mr-5 ml-5"
+                        />
 
 
                       </div>
@@ -158,9 +186,8 @@ class Profilepage extends Component {
 
 
                  </div>
-                 <div className="box-footer clearfix">
-                      <button disabled={!formChanged||saving} className="btn btn-primary float-left" onClick={this.handleSubmit}>Save {saving && <div className="btn-loader lds-dual-ring"></div>}</button>
-                      <Link to={'/calibration'} className="float-right"><button className="btn btn-secondary">Run Calibrate</button></Link>
+                 <div className="box-footer">
+                      <button disabled={!formChanged||saving} className="btn btn-primary" onClick={this.handleSubmit}>Save {saving && <div className="btn-loader lds-dual-ring"></div>}</button>
                  </div>
            </div>
          </div>
