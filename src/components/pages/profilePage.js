@@ -40,12 +40,20 @@ class Profilepage extends Component {
         .then(res => {
           if (res.data.success === true) {
             var sliderValue;
-            if (res.data.autoTuneMode=="off") {
-              sliderValue=-1;
-            } else if(res.data.autoTuneMode=="efficient") {
-              sliderValue=1;
-            } else if (res.data.autoTuneMode=="default") {
-              sliderValue=0;
+            switch (res.data.autoTuneMode) {
+              case "off":
+                sliderValue=0;
+                break;
+              case "efficient":
+                sliderValue=1;
+                break;
+              case "balanced":
+                sliderValue=2;
+                break;
+              case "performance":
+                sliderValue=3;
+                break;
+              default:
             }
             page.setState({"isLoaded":true,"sliderValue":sliderValue,"sliderValueSetted":sliderValue});
           } else {
@@ -72,14 +80,23 @@ class Profilepage extends Component {
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-      var mode="off";
-      if (sliderValue===0) {
-        mode="default";
-      } else if (sliderValue===1) {
-        mode="efficient";
+
+      var mode="";
+      switch (sliderValue) {
+        case 0:
+          mode="off";
+          break;
+        case 1:
+          mode="efficient";
+          break;
+        case 2:
+          mode="balanced"
+          break;
+        case 3:
+          mode="performance"
+          break;
+        default:
       }
-
-
 
       var params = new URLSearchParams();
       params.append('autotune', mode);
@@ -127,9 +144,10 @@ class Profilepage extends Component {
     }
 
     const horizontalLabels = {
-      "-1": 'Off',
-      "0": 'Default',
-      "1": 'Efficiency'
+      0: 'Off',
+      1: 'Efficiency',
+      2: 'Balanced',
+      3: 'Performance'
     }
 
 
@@ -163,15 +181,16 @@ class Profilepage extends Component {
                         <p className="small text-left">There are 3 Auto Tune modes</p>
                         <ol className="small text-left">
                           <li><strong>Off</strong> the miner will work with the factory default values</li>
-                          <li><strong>Default</strong> the miner will dynamically search the voltage and frequency values to achieve the highest hash rate</li>
                           <li><strong>Efficiency</strong> the miner will use less power but the hash rate will be lower</li>
+                          <li><strong>Balanced</strong> <i>default</i> value to achieve balanced hash rate and power consumption</li>
+                          <li><strong>Performance</strong> high hash rate and high power consumption</li>
                         </ol>
 
                         <h3 className="color-title">Auto Tune Mode: </h3>
 
                         <Slider
-                          min={-1}
-                          max={1}
+                          min={0}
+                          max={3}
                           value={0}
                           tooltip={false}
                           value={sliderValue}

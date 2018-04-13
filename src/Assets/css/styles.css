@@ -639,5 +639,8 @@ input:checked + .slider:before {
     DASHBOARD
 ----------------------------------------------------- */
 .rangeslider__fill {
-  background-color: #e6e6e6 !important;
+  background-color: inherit !important;
+}
+.rangeslider {
+  background: linear-gradient(90deg, #fffa7b, #ff7200) !important;
 }
