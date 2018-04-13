@@ -197,7 +197,7 @@ class Upgradepage extends Component {
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
-                page.setState({"redirectToLogin":true});
+                window.location.reload();
             }
           }
 
@@ -288,10 +288,6 @@ class Upgradepage extends Component {
       return <Redirect to="/?rebooting" />;
     }
 
-
-    if (redirectToLogin) {
-      return <Redirect to="/login?expired" />;
-    }
     return (
       <div className="Upgradepage">
 
