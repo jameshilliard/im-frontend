@@ -144,7 +144,7 @@ class Profilepage extends Component {
     }
 
     const horizontalLabels = {
-      0: 'Off',
+      0: 'Saved Values',
       1: 'Efficiency',
       2: 'Balanced',
       3: 'Performance'
@@ -178,15 +178,16 @@ class Profilepage extends Component {
 
                    <div className="row">
                       <div className="col-md-12 text-center">
-                        <p className="small text-left">There are 3 Auto Tune modes</p>
+                        <p className="small text-left">There are 3 tuning modes</p>
                         <ol className="small text-left">
-                          <li><strong>Off</strong> the miner will work with the factory default values</li>
+                          <li><strong>Off</strong> the miner will work with the saved values</li>
                           <li><strong>Efficiency</strong> the miner will use less power but the hash rate will be lower</li>
-                          <li><strong>Balanced</strong> <i>default</i> value to achieve balanced hash rate and power consumption</li>
+                          <li><strong>Balanced</strong> <i>recommended</i> value to achieve balanced hash rate and power consumption</li>
                           <li><strong>Performance</strong> high hash rate and high power consumption</li>
                         </ol>
-
-                        <h3 className="color-title">Auto Tune Mode: </h3>
+                        <p className="small text-left">Tuning takes about 30 minutes and the result will be saved and used for again at reboot. The slider will return to the "saved values" position after tuning is completed</p>
+                        <p className="small text-left">Please note hashrate will vary during the tuning process, see Overview page for details.</p>
+                        <h3 className="color-title">Tuning Mode: </h3>
 
                         <Slider
                           min={0}
