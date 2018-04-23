@@ -75,20 +75,21 @@ class Homepage extends Component {
           var hashRatesTotal=[];
           var times=[];
           var showGraph=false;
+
           if (res.data.stats) {
-            var i=1;
-            res.data.stats.forEach(function(chain)  {
+            Object.keys(res.data.stats).forEach(function(key) {
+              var chain=res.data.stats[key];
               var dataSet={
-                  label: 'Chain '+i,
+                  label: 'Chain '+(parseInt(key)+1),
                   data: chain,
                   fill: false,
                   borderWidth: 2,
-                  borderColor: colors[i-1],
-                  pointHoverBackgroundColor: colors[i-1],
-                  pointHoverBorderColor: colors[i-1]
+                  borderColor: colors[key],
+                  pointHoverBackgroundColor: colors[key],
+                  pointHoverBorderColor: colors[key]
               };
               dataSets.push(dataSet);
-              i++;
+
 
               if (chain!=null) {
                 if (chain.length>1)
@@ -101,6 +102,7 @@ class Homepage extends Component {
                   }
                 }
               }
+
             });
             var dataSetTotal={
                 label: 'Total',

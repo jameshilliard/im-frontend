@@ -106,7 +106,7 @@ class Debugpage extends Component {
                 <h4>Boards</h4>
                 {boards.map((item, index) => (
                   <div key={index} className="mt-3">
-                    <h5>Board {index+1}</h5>
+                    <h5>Board {item.board["Chain ID"]+1}</h5>
 
                     <div className="row small">
                         {Object.keys(item.board).map(function(key) {
