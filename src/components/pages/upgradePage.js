@@ -115,7 +115,7 @@ class Upgradepage extends Component {
 
 
 
-            comp.setState({"upgradeStatus":"IDLE","upgradeStep":"Uploading","upgradeMessages":[],"upgradeDidRun":true});
+
             var ws = new WebSocket('ws://' + window.location.host + window.location.pathname.replace(/\/[^\/]*$/, '') + window.customVars.apiUpgradeProgress)
             upgradeMessages=[];
 
@@ -158,6 +158,7 @@ class Upgradepage extends Component {
             }
 
             if (type==="upload") {
+              comp.setState({"upgradeStatus":"IDLE","upgradeStep":"Uploading","upgradeMessages":[],"upgradeDidRun":true});
               const config = {
                 onUploadProgress: function(progressEvent) {
                   var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
@@ -186,6 +187,7 @@ class Upgradepage extends Component {
 
               });
             } else if (type=="download"){
+              comp.setState({"upgradeStatus":"IDLE","upgradeStep":"Downloading","upgradeMessages":[],"upgradeDidRun":true});
               if (latestFirmware!=null && latestFirmware.url!="") {
                 const config = {
                   headers: {
