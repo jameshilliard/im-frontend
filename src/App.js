@@ -37,6 +37,7 @@ class App extends Component {
         apiReboot: "/api/reboot",
         apiOverview: "/api/overview",
         apiUpgrade: "/upgrade/upload",
+        apiUpgradeDownload: "/upgrade/download",
         apiUpgradeProgress: "/upgrade/ws",
         apiFactoryReset: "/api/factoryReset",
         apiStartSelfTest: "/api/startSelfTest",

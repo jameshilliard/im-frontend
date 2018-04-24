@@ -30,9 +30,11 @@ class Upgradepage extends Component {
         uploadPercent: 0,
         checkingLatestFirmware: false,
         latestFirmware: null,
-        errorCheckingLatestFirmware: ""
+        errorCheckingLatestFirmware: "",
+        type: "upload"
     };
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.upgradeFromUrl = this.upgradeFromUrl.bind(this);
     this.checkLatestFirmware = this.checkLatestFirmware.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
   }
@@ -95,12 +97,12 @@ class Upgradepage extends Component {
     }
   }
 
-  handleSubmit(event) {
-    var { upgrading, upgradeMessages,upgradeStatus } = this.state;
+  upgrade(type) {
+    var { upgrading, upgradeMessages,upgradeStatus,latestFirmware,uploadPercent } = this.state;
 
-    event.preventDefault();
+
       if (!upgrading) {
-        if (this.fileInput.files[0]==null||this.fileInput.files[0].name.split('.').pop()!="swu"||(this.fileInput.files[0].size / Math.pow(1024,2)).toFixed(2) > 100) {
+        if (type==="upload"&&(this.fileInput.files[0]==null||this.fileInput.files[0].name.split('.').pop()!="swu"||(this.fileInput.files[0].size / Math.pow(1024,2)).toFixed(2) > 100)) {
           this.setState({errorMessage:"Please insert a valid firmware file."})
         } else {
 
@@ -110,60 +112,106 @@ class Upgradepage extends Component {
           } else {
 
             var comp=this;
-            const config = {
-              onUploadProgress: function(progressEvent) {
-                var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
-                comp.setState({uploadPercent:percentCompleted});
-              },
-              headers: {
-                  'Authorization': 'Bearer ' + token,
-                  'Content-Type': 'multipart/form-data'
-              }
-            }
+
+
 
             comp.setState({"upgradeStatus":"IDLE","upgradeStep":"Uploading","upgradeMessages":[],"upgradeDidRun":true});
             var ws = new WebSocket('ws://' + window.location.host + window.location.pathname.replace(/\/[^\/]*$/, '') + window.customVars.apiUpgradeProgress)
             upgradeMessages=[];
 
             ws.onmessage = function (event) {
-              var msg = JSON.parse(event.data)
-
-              switch (msg.type) {
-                case 'message':
-                  upgradeMessages.push({"level":msg.level,"text":msg.text})
-                  comp.setState({"upgradeMessages":upgradeMessages});
-                  break
-                case 'status':
-                  comp.updateStatus(msg.status);
-                  break
-                case 'source':
-                  break
-                case 'step':
-                  var percent = Math.round((100 * (Number(msg.step) - 1) + Number(msg.percent)) / Number(msg.number))
-                  //var value = percent + '%' + ' (' + msg.step + ' of ' + msg.number + ')'
-                  var upgradeStepCount=msg.step + ' of ' + msg.number;
-                  comp.setState({"upgradeStep":msg.name,"upgradeStepCount":upgradeStepCount,"upgradePercent":percent});
-                  break
+              var msg = null;
+              var downloadProgress=0;
+              try {
+                msg = JSON.parse(event.data)
+              } catch(e) {
+                //json is malformed, ingore it (info response) bug from swupdate
+              }
+              if (msg!=null) {
+                switch (msg.type) {
+                  case 'message':
+                    if (msg.text.indexOf("Received")>=0&&msg.text.indexOf("percent")>=0) { //Is download progress
+                      try {
+                        var downloadJson=JSON.parse(msg.text);
+                        if (typeof downloadJson !== "undefined"&&typeof downloadJson.percent !== "undefined" && downloadJson.percent!=uploadPercent) {
+                          comp.setState({"uploadPercent":downloadJson.percent});
+                        }
+                      } catch(e) {}
+                    } else {
+                      upgradeMessages.push({"level":msg.level,"text":msg.text})
+                      comp.setState({"upgradeMessages":upgradeMessages});
+                    }
+                    break
+                  case 'status':
+                    comp.updateStatus(msg.status);
+                    break
+                  case 'source':
+                    break
+                  case 'step':
+                    var percent = Math.round((100 * (Number(msg.step) - 1) + Number(msg.percent)) / Number(msg.number))
+                    //var value = percent + '%' + ' (' + msg.step + ' of ' + msg.number + ')'
+                    var upgradeStepCount=msg.step + ' of ' + msg.number;
+                    comp.setState({"upgradeStep":msg.name,"upgradeStepCount":upgradeStepCount,"upgradePercent":percent});
+                    break
+                }
               }
             }
 
-            this.setState({upgrading:true,errorMessage:""});
-            var fd = new FormData();
-            fd.append("upfile", this.fileInput.files[0]);
-
-            axios.post(window.customVars.urlPrefix+window.customVars.apiUpgrade, fd, config)
-            .then(function (res) {
-                if (res.data.success === true) {
-
+            if (type==="upload") {
+              const config = {
+                onUploadProgress: function(progressEvent) {
+                  var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
+                  comp.setState({uploadPercent:percentCompleted});
+                },
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'multipart/form-data'
                 }
-            })
-            .catch(function (error) {
-                if (error.response&&error.response.status == 401) {
-                  deleteStorage("jwt");
-                  comp.setState({"redirectToLogin":true});
-                }
+              }
+              this.setState({upgrading:true,errorMessage:""});
+              var fd = new FormData();
+              fd.append("upfile", this.fileInput.files[0]);
 
-            });
+              axios.post(window.customVars.urlPrefix+window.customVars.apiUpgrade, fd, config)
+              .then(function (res) {
+                  if (res.data.success === true) {
+
+                  }
+              })
+              .catch(function (error) {
+                  if (error.response&&error.response.status == 401) {
+                    deleteStorage("jwt");
+                    comp.setState({"redirectToLogin":true});
+                  }
+
+              });
+            } else if (type=="download"){
+              if (latestFirmware!=null && latestFirmware.url!="") {
+                const config = {
+                  headers: {
+                      'Authorization': 'Bearer ' + token
+                  }
+                }
+                this.setState({upgrading:true,errorMessage:""});
+                var postData=new Array();
+                postData["url"]=latestFirmware.url;
+                var strSend = generateUrlEncoded(postData);
+
+                axios.post(window.customVars.urlPrefix+window.customVars.apiUpgradeDownload, strSend, config)
+                .then(function (res) {
+                    if (res.data.success === true) {
+
+                    }
+                })
+                .catch(function (error) {
+                    if (error.response&&error.response.status == 401) {
+                      deleteStorage("jwt");
+                      comp.setState({"redirectToLogin":true});
+                    }
+
+                });
+              }
+            }
 
 
           }
@@ -171,7 +219,16 @@ class Upgradepage extends Component {
 
         }
       }
+  }
+  upgradeFromUrl() {
+    this.upgrade("download");
+    this.setState({"type":"download"});
+  }
 
+  handleSubmit(event) {
+    event.preventDefault();
+    this.upgrade("upload");
+    this.setState({"type":"upload"});
   }
 
   checkMiner() {
@@ -281,7 +338,8 @@ class Upgradepage extends Component {
       rebooting,
       checkingLatestFirmware,
       latestFirmware,
-      errorCheckingLatestFirmware
+      errorCheckingLatestFirmware,
+      type
      } = this.state;
 
     if (redirectToIndex) {
@@ -336,12 +394,12 @@ class Upgradepage extends Component {
                                     Status
                                   </div>
                                   <div className="col-md-9 field-value">
-                                    <span className={upgradeStatus=="FAILURE" &&"text-warning"}>{upgradeStatus}</span>
+                                    <span className={upgradeStatus=="FAILURE" ? "text-warning":""}>{upgradeStatus}</span>
                                   </div>
                                </div>
                                <div className="row mt-2">
                                   <div className="col-md-3 field-title">
-                                    Upload progress
+                                    {type==="upload" && "Upload"}{type==="download" && "Download"} progress
                                   </div>
                                   <div className="col-md-9">
                                     <div className="progress">
@@ -480,8 +538,11 @@ class Upgradepage extends Component {
                    }
                    </div> {/*.box-body*/}
 
-                   <div className="box-footer">
-                       <button disabled={checkingLatestFirmware} className="btn btn-primary" onClick={this.checkLatestFirmware}>Check Now {checkingLatestFirmware && <div className="btn-loader lds-dual-ring"></div>}</button>
+                   <div className="box-footer clearfix">
+                       <button disabled={checkingLatestFirmware} className="btn btn-primary float-left" onClick={this.checkLatestFirmware}>Check Now {checkingLatestFirmware && <div className="btn-loader lds-dual-ring"></div>}</button>
+                       {latestFirmware!=null && !latestFirmware.isUpdated && !upgraded &&
+                       <button disabled={checkingLatestFirmware||upgrading} className="btn btn-secondary float-right" onClick={this.upgradeFromUrl}>Upgrade Now {upgrading && <div className="btn-loader lds-dual-ring"></div>}</button>
+                       }
                    </div>
 
 
