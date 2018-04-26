@@ -479,15 +479,16 @@ input[type="checkbox"] {
     border-radius: 50%;
     animation: lds-dual-ring 1.2s linear infinite;
 }
-.btn .lds-dual-ring {
+.btn .lds-dual-ring,.small.lds-dual-ring {
     width: 15px;
     height: 15px;
     margin-right: 0px;
 }
-.btn .lds-dual-ring:after {
+.btn .lds-dual-ring:after,.small.lds-dual-ring::after {
     width: 15px;
     height: 15px;
 }
+
 .dark-skin .lds-dual-ring:after {
     border: 5px solid #fff;
     border-color: #fff transparent #fff transparent;

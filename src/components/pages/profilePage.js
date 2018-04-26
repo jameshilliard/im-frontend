@@ -14,6 +14,9 @@ class Profilepage extends Component {
       "alertMessage": "",
       "isLoaded": false,
       "sliderValue": 1,
+      "actualMode": "",
+      "isRunning": false,
+      "isTuning": false,
       "redirectToLogin": false,
       "saving": false,
       "formChanged": false
@@ -21,8 +24,17 @@ class Profilepage extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentDidMount() {
+  componentWillUnmount() {
+    if (typeof this.timeOutStatus !== 'undefined')
+      clearTimeout(this.timeOutStatus);
 
+  }
+
+  componentDidMount() {
+    this.checkStatus();
+  }
+
+  checkStatus() {
     var page=this;
     var token=getStorage("jwt");
     if (token===null) {
@@ -36,26 +48,33 @@ class Profilepage extends Component {
               'Authorization': 'Bearer ' + token
           }
         };
-        axios.post(window.customVars.urlPrefix+window.customVars.apiGetAutoTune,postData,axiosConfig)
+        axios.post(window.customVars.urlPrefix+window.customVars.apiGetAutoTuneStatus,postData,axiosConfig)
         .then(res => {
           if (res.data.success === true) {
-            var sliderValue;
-            switch (res.data.autoTuneMode) {
-              case "off":
-                sliderValue=0;
-                break;
-              case "efficient":
-                sliderValue=1;
-                break;
-              case "balanced":
-                sliderValue=2;
-                break;
-              case "performance":
-                sliderValue=3;
-                break;
-              default:
+            if (this.state.actualMode==="") {
+              var sliderValue;
+              switch (res.data.mode) {
+                case "efficient":
+                  sliderValue=1;
+                  break;
+                case "balanced":
+                  sliderValue=2;
+                  break;
+                case "factory":
+                  sliderValue=3;
+                  break;
+                case "performance":
+                  sliderValue=4;
+                  break;
+                default:
+              }
+              page.setState({"isLoaded":true,"actualMode":res.data.mode,"sliderValue":sliderValue,"sliderValueSetted":sliderValue,"isRunning":res.data.isRunning,"isTuning":res.data.isTuning});
+            } else {
+              page.setState({"actualMode":res.data.mode,"isRunning":res.data.isRunning,"isTuning":res.data.isTuning});
             }
-            page.setState({"isLoaded":true,"sliderValue":sliderValue,"sliderValueSetted":sliderValue});
+            page.timeOutStatus=setTimeout(() => {
+              page.checkStatus();
+            }, 20000);
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
@@ -68,7 +87,6 @@ class Profilepage extends Component {
 
           });
     }
-
   }
 
 
@@ -83,9 +101,6 @@ class Profilepage extends Component {
 
       var mode="";
       switch (sliderValue) {
-        case 0:
-          mode="off";
-          break;
         case 1:
           mode="efficient";
           break;
@@ -93,6 +108,9 @@ class Profilepage extends Component {
           mode="balanced"
           break;
         case 3:
+          mode="factory";
+          break;
+        case 4:
           mode="performance"
           break;
         default:
@@ -134,7 +152,7 @@ class Profilepage extends Component {
   }
 
   render() {
-    var { alertMessage,isLoaded,sliderValue,redirectToLogin,saving,formChanged,saved } = this.state;
+    var { alertMessage,isLoaded,sliderValue,redirectToLogin,saving,formChanged,saved,actualMode,isRunning,isTuning } = this.state;
 
 
 
@@ -144,14 +162,11 @@ class Profilepage extends Component {
     }
 
     const horizontalLabels = {
-      0: 'Saved Values',
       1: 'Efficiency',
       2: 'Balanced',
-      3: 'Performance'
+      3: 'Factory',
+      4: 'Performance'
     }
-
-
-
 
     return (
       <div className="Profilepage">
@@ -177,21 +192,21 @@ class Profilepage extends Component {
                  }
 
                    <div className="row">
-                      <div className="col-md-12 text-center">
-                        <p className="small text-left">There are 3 tuning modes</p>
-                        <ol className="small text-left">
-                          <li><strong>Off</strong> the miner will work with the saved values</li>
+                      <div className="col-md-12">
+                        <p className="small">There are 4 tuning modes</p>
+                        <ol className="small">
                           <li><strong>Efficiency</strong> the miner will use less power but the hash rate will be lower</li>
                           <li><strong>Balanced</strong> <i>recommended</i> value to achieve balanced hash rate and power consumption</li>
+                          <li><strong>Factory</strong> the miner will work factory values</li>
                           <li><strong>Performance</strong> high hash rate and high power consumption</li>
                         </ol>
-                        <p className="small text-left">Tuning takes about 30 minutes and the result will be saved and used for again at reboot. The slider will return to the "saved values" position after tuning is completed</p>
-                        <p className="small text-left">Please note hashrate will vary during the tuning process, see Overview page for details.</p>
-                        <h3 className="color-title">Tuning Mode: </h3>
+                        <p className="small">Tuning takes about 30 minutes and the result will be saved and used for again at reboot.</p>
+                        <p className="small">Please note hashrate will vary during the tuning process.</p>
+
 
                         <Slider
-                          min={0}
-                          max={3}
+                          min={1}
+                          max={4}
                           value={0}
                           tooltip={false}
                           value={sliderValue}
@@ -199,7 +214,26 @@ class Profilepage extends Component {
                           labels={horizontalLabels}
                           className="mr-5 ml-5"
                         />
+                        <br />
+                        <h5 className="color-title mt-5">Tuning Status</h5>
 
+                        <div className="row mt-3 text-left">
+                            <div className="col-md-3">
+                                <span className="field-title">Current Mode</span>
+                            </div>
+                            <div className="col-md-9 field-value">
+                                {actualMode}
+                            </div>
+                        </div>
+                        <div className="row mt-3 text-left">
+                            <div className="col-md-3">
+                                <span className="field-title">Tuning Status</span>
+                            </div>
+                            <div className="col-md-9 field-value">
+                                {!isRunning||isTuning && <div>tuning <div className="small lds-dual-ring"></div></div>}
+                                {isRunning&&!isTuning && "tuned"}
+                            </div>
+                        </div>
 
                       </div>
                     </div>
