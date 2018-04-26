@@ -48,7 +48,8 @@ class App extends Component {
         apiSetAutoTune: "/api/setAutoTune",
         apiLatestFirmwareVersion: "/api/getLatestFirmwareVersion",
         apiHashRates: "/api/getHashRates",
-        apiDebug: "/api/getDebugStats"
+        apiDebug: "/api/getDebugStats",
+        apiStreamLogs: "/stream/logs"
     };
   }
 

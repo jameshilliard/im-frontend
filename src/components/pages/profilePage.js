@@ -127,7 +127,7 @@ class Profilepage extends Component {
       axios.post(window.customVars.urlPrefix+window.customVars.apiSetAutoTune,params,axiosConfig)
       .then(res => {
         if (res.data.success === true) {
-          this.setState({"saving":false,"saved":true,"sliderValueSetted":sliderValue,"formChanged":false});
+          this.setState({"saving":false,"saved":true,"sliderValueSetted":sliderValue,"formChanged":false,"actualMode":mode,"isRunning":true,"isTuning":true});
         } else {
           if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
               deleteStorage("jwt");
@@ -230,7 +230,7 @@ class Profilepage extends Component {
                                 <span className="field-title">Tuning Status</span>
                             </div>
                             <div className="col-md-9 field-value">
-                                {!isRunning||isTuning && <div>tuning <div className="small lds-dual-ring"></div></div>}
+                                {(isRunning===false||isTuning===true) && <div>tuning <div className="small lds-dual-ring"></div></div>}
                                 {isRunning&&!isTuning && "tuned"}
                             </div>
                         </div>

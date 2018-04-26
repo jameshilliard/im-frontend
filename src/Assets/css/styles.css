@@ -645,3 +645,10 @@ input:checked + .slider:before {
 .rangeslider {
   background: linear-gradient(90deg, #fffa7b, #ff7200) !important;
 }
+/* ---------------------------------------------------
+    LOGS
+----------------------------------------------------- */
+.logBox {
+  height: 400px;
+  overflow-y: scroll;
+}
