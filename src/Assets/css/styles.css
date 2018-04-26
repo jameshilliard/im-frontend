@@ -651,4 +651,6 @@ input:checked + .slider:before {
 .logBox {
   height: 400px;
   overflow-y: scroll;
+  font-family: monospace;
+  font-size: 10px;
 }
