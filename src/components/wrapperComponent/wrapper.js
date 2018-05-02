@@ -128,6 +128,7 @@ class Wrapper extends Component {
                                 <li><NavLink to="/upgrade" activeClassName="active">Firmware</NavLink></li>
                                 <li><NavLink to="/reboot" activeClassName="active">Reboot</NavLink></li>
                                 {isAdmin &&<li><NavLink to="/reset" activeClassName="active">Factory Reset</NavLink></li>}
+                                {isAdmin &&<li><NavLink to="/logs" activeClassName="active">Miner Logs</NavLink></li>}
                             </ul>)} />
                         </li>}
                         <li><NavLink to="/overview" activeClassName="active"><i className="fa fa-microchip"></i>&nbsp;&nbsp; Overview</NavLink></li>
