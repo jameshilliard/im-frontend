@@ -30,7 +30,8 @@ class Homepage extends Component {
       "hashRatesDataSets": [],
       "hashRatesTimes": [],
       "showGraph": false,
-      "isTuning": false
+      "isTuning": false,
+      "minertype":""
     };
 
   }
@@ -166,6 +167,15 @@ class Homepage extends Component {
             'Authorization': 'Bearer ' + token
         }
       };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiMinerType,postData,axiosConfig)
+      .then(res => {
+        if (res.data.success==true) 
+        {
+          this.setState({
+            minertype: res.data.type,
+          });
+        }
+      })
       axios.post(window.customVars.urlPrefix+window.customVars.apiDevsPools,postData,axiosConfig)
 
       .then(res => {
@@ -227,7 +237,7 @@ class Homepage extends Component {
 
 
   render() {
-    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph,isTuning } = this.state;
+    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph,isTuning,minertype } = this.state;
 
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
@@ -244,7 +254,7 @@ class Homepage extends Component {
       tooltips: {
         callbacks: {
             label: function(tooltipItem, data) {
-                return " "+convertHashRate(tooltipItem.yLabel);
+                return " "+convertHashRate(tooltipItem.yLabel,minertype);
             }
         }
       },
@@ -267,7 +277,7 @@ class Homepage extends Component {
             {
                 ticks: {
                     callback: function(label, index, labels) {
-                        return convertHashRate(label);
+                        return convertHashRate(label,minertype);
                     }
                 }
             }
@@ -358,7 +368,7 @@ class Homepage extends Component {
                             {!summary.mHs && <div className="lds-dual-ring"></div>}
                             {summary.mHs &&
                             <p className="card-text">
-                              {convertHashRate(summary.mHs)}
+                              {convertHashRate(summary.mHs,minertype)}
                             </p>
                             }
                           </div>
@@ -472,7 +482,7 @@ class Homepage extends Component {
                     <tbody id="bodyMinerInfo">
                     {chains.map(chain => (
                       <tr key={chain.ASC}><td>{parseInt(chain.ASC)+1}</td>
-                      <td>{convertHashRate(chain["Hash Rate"])}</td>
+                      <td>{convertHashRate(chain["Hash Rate"],minertype)}</td>
                       <td>{chain.Status==="Alive" ? <span className="badge badge-success font-normal">Alive</span>:<span className="badge badge-warning font-normal">Dead</span>}</td>
                       <td>{chain.Accepted}/{chain.Rejected}</td>
                       <td>{chain["Hardware Errors"]}</td>

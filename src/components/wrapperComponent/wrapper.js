@@ -22,6 +22,7 @@ import Profilepage from '../../components/pages/profilePage';
 import DebugPage from '../../components/pages/debugPage';
 import LogsPage from '../../components/pages/logsPage';
 
+import FreqVolPage from '../../components/pages/freqvolPage';
 class Wrapper extends Component {
 
   constructor(props) {
@@ -173,6 +174,7 @@ class Wrapper extends Component {
                         <Route exact path='/profile' component={Profilepage} />
                         <Route exact path='/debug' component={DebugPage} />
                         <Route exact path='/logs' component={LogsPage} />
+                        {/* <Route exact path='/tuning' component={FreqVolPage} /> */}
                     </div>
                     {/* ./ Page content */}
                 </div>

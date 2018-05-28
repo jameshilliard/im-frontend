@@ -26,7 +26,8 @@ class Homepage extends Component {
       "isLoaded": false,
       "isRestarting": isRestarting,
       "isRebooting": isRebooting,
-      "redirectToLogin":false
+      "redirectToLogin":false,
+      "minertype":""
     };
 
   }
@@ -59,6 +60,14 @@ class Homepage extends Component {
             'Authorization': 'Bearer ' + token
         }
       };
+      axios.post(window.customVars.urlPrefix+window.customVars.apiMinerType,postData,axiosConfig)
+      .then(function (response) 
+      {
+        if(response.data.success == true)
+        this.setState({
+          minertype: response.data.type,
+        });
+      })
       axios.post(window.customVars.urlPrefix+window.customVars.apiDevsPools,postData,axiosConfig)
 
       .then(res => {
@@ -113,7 +122,7 @@ class Homepage extends Component {
 
 
   render() {
-    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin } = this.state;
+    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,minertype } = this.state;
 
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
@@ -159,7 +168,7 @@ class Homepage extends Component {
                      </thead>
                      <tbody id="bodyMinerStatus">
                      {isLoaded &&
-                     <tr><td>{formatUpTime(summary.upTime)}</td><td>{convertHashRate(summary.mHs)}</td><td>{summary.accepted}/{summary.rejected}</td><td>{summary.hwErrors}</td><td>{summary.fansSpeed}%</td></tr>
+                     <tr><td>{formatUpTime(summary.upTime)}</td><td>{convertHashRate(summary.mHs,minertype)}</td><td>{summary.accepted}/{summary.rejected}</td><td>{summary.hwErrors}</td><td>{summary.fansSpeed}%</td></tr>
                      }
                      </tbody>
                    </table>
@@ -224,7 +233,7 @@ class Homepage extends Component {
                     <tbody id="bodyMinerInfo">
                     {chains.map(chain => (
                       <tr key={chain.ASC}><td>{parseInt(chain.ASC)+1}</td>
-                      <td>{convertHashRate(chain["MHS av"])}</td>
+                      <td>{convertHashRate(chain["MHS av"],minertype)}</td>
                       <td>{chain.Status==="Alive" ? <span className="badge badge-success font-normal">Alive</span>:<span className="badge badge-warning font-normal">Dead</span>}</td>
                       <td>{chain.Accepted}/{chain.Rejected}</td>
                       <td>{chain["Hardware Errors"]}</td>

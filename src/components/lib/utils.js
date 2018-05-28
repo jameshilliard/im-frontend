@@ -44,14 +44,31 @@ export function formatUpTime(timestamp)
     return daysText+hoursText+minutesText;
 }
 
-export function convertHashRate(hashRate) {
-    if (hashRate<1000) {
+export function convertHashRate(hashRate,minertype) 
+{
+  if(minertype == 'B29+')
+  {
+    return (hashRate/1000).toFixed(2)+' KH/s';
+  }
+  else if(minertype == 'A8+')
+  {
+    return hashRate.toFixed(2)+' KH/s';
+  }
+  else
+  {
+    if (hashRate<1000) 
+    {
         return hashRate.toFixed(2)+' MH/s';
-    } else if (hashRate>=1000 && hashRate<1000000) {
+    } 
+    else if (hashRate>=1000 && hashRate<1000000) 
+    {
         return (hashRate/1000).toFixed(2)+' GH/s ';
-    } else if (hashRate>=1000000) {
+    } 
+    else if (hashRate>=1000000) 
+    {
         return (hashRate / 1000000).toFixed(2) + ' TH/s ';
-    }
+    }    
+  }
 }
 export function parseQueryString(url)
 {

@@ -49,7 +49,10 @@ class App extends Component {
         apiLatestFirmwareVersion: "/api/getLatestFirmwareVersion",
         apiHashRates: "/api/getHashRates",
         apiDebug: "/api/getDebugStats",
-        apiStreamLogs: "/stream/logs"
+        apiStreamLogs: "/stream/logs",
+        //freq and vol
+        apiSetFreqVol:"/api/setFreqVol",
+        apiConfigFreqVol: "/api/getFreqVol",
     };
   }
 
