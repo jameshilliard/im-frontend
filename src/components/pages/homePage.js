@@ -31,7 +31,7 @@ class Homepage extends Component {
       "hashRatesTimes": [],
       "showGraph": false,
       "isTuning": false,
-      "minertype":""
+      "minerunit":""
     };
 
   }
@@ -167,12 +167,12 @@ class Homepage extends Component {
             'Authorization': 'Bearer ' + token
         }
       };
-      axios.post(window.customVars.urlPrefix+window.customVars.apiMinerType,postData,axiosConfig)
+      axios.post(window.customVars.urlPrefix+window.customVars.apiGetMinerUnit,postData,axiosConfig)
       .then(res => {
         if (res.data.success==true) 
         {
           this.setState({
-            minertype: res.data.type,
+            minerunit : res.data.unit,
           });
         }
       })
@@ -194,7 +194,7 @@ class Homepage extends Component {
             accepted+=parseInt(chain["Accepted"]);
             rejected+=parseInt(chain["Rejected"]);
             hwErrors+=parseInt(chain["Hardware Errors"]);
-            mHs+=parseFloat(chain["Hash Rate"]);
+            mHs+=parseFloat(chain["Hash Rate H"]);
           });
           const summary = {"accepted":accepted,"rejected": rejected, "hwErrors":hwErrors, "mHs":mHs, "upTime":upTime, "fansSpeed":fansSpeed}
           const pools = res.data.POOLS;
@@ -237,7 +237,7 @@ class Homepage extends Component {
 
 
   render() {
-    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph,isTuning,minertype } = this.state;
+    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph,isTuning,minerunit } = this.state;
 
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
@@ -254,7 +254,7 @@ class Homepage extends Component {
       tooltips: {
         callbacks: {
             label: function(tooltipItem, data) {
-                return " "+convertHashRate(tooltipItem.yLabel,minertype);
+                return " "+convertHashRate(tooltipItem.yLabel,minerunit);
             }
         }
       },
@@ -277,7 +277,7 @@ class Homepage extends Component {
             {
                 ticks: {
                     callback: function(label, index, labels) {
-                        return convertHashRate(label,minertype);
+                        return convertHashRate(label,minerunit);
                     }
                 }
             }
@@ -368,7 +368,7 @@ class Homepage extends Component {
                             {!summary.mHs && <div className="lds-dual-ring"></div>}
                             {summary.mHs &&
                             <p className="card-text">
-                              {convertHashRate(summary.mHs,minertype)}
+                              {convertHashRate(summary.mHs,minerunit)}
                             </p>
                             }
                           </div>
@@ -482,7 +482,7 @@ class Homepage extends Component {
                     <tbody id="bodyMinerInfo">
                     {chains.map(chain => (
                       <tr key={chain.ASC}><td>{parseInt(chain.ASC)+1}</td>
-                      <td>{convertHashRate(chain["Hash Rate"],minertype)}</td>
+                      <td>{convertHashRate(chain["Hash Rate H"],minerunit)}</td>
                       <td>{chain.Status==="Alive" ? <span className="badge badge-success font-normal">Alive</span>:<span className="badge badge-warning font-normal">Dead</span>}</td>
                       <td>{chain.Accepted}/{chain.Rejected}</td>
                       <td>{chain["Hardware Errors"]}</td>

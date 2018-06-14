@@ -44,31 +44,41 @@ export function formatUpTime(timestamp)
     return daysText+hoursText+minutesText;
 }
 
-export function convertHashRate(hashRate,minertype) 
+export function convertHashRate(hashRate,unit)
 {
-  if(minertype == 'B29+')
+  var unit_list = ["","K","M","G","T","P","E"];
+  var hash_show = hashRate;
+  var unit_key = 0;
+  while(hash_show >= 1000)
   {
-    return (hashRate/1000).toFixed(2)+' KH/s';
+    hash_show /= 1000;
+    unit_key ++;
   }
-  else if(minertype == 'A8+')
-  {
-    return hashRate.toFixed(2)+' KH/s';
-  }
-  else
-  {
-    if (hashRate<1000) 
-    {
-        return hashRate.toFixed(2)+' MH/s';
-    } 
-    else if (hashRate>=1000 && hashRate<1000000) 
-    {
-        return (hashRate/1000).toFixed(2)+' GH/s ';
-    } 
-    else if (hashRate>=1000000) 
-    {
-        return (hashRate / 1000000).toFixed(2) + ' TH/s ';
-    }    
-  }
+  return hash_show.toFixed(2) + " " + unit_list[unit_key]+unit;
+
+  // if(minertype == 'B29+')
+  // {
+  //   return (hashRate/1000).toFixed(2)+' KH/s';
+  // }
+  // else if(minertype == 'A8+')
+  // {
+  //   return hashRate.toFixed(2)+' KH/s';
+  // }
+  // else
+  // {
+  //   if (hashRate<1000)
+  //   {
+  //       return hashRate.toFixed(2)+' MH/s';
+  //   }
+  //   else if (hashRate>=1000 && hashRate<1000000)
+  //   {
+  //       return (hashRate/1000).toFixed(2)+' GH/s ';
+  //   }
+  //   else if (hashRate>=1000000)
+  //   {
+  //       return (hashRate / 1000000).toFixed(2) + ' TH/s ';
+  //   }
+  // }
 }
 export function parseQueryString(url)
 {

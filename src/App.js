@@ -53,6 +53,8 @@ class App extends Component {
         //freq and vol
         apiSetFreqVol:"/api/setFreqVol",
         apiConfigFreqVol: "/api/getFreqVol",
+        //miner unit
+        apiGetMinerUnit:"/api/unit",
     };
   }
 
