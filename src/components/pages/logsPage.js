@@ -15,7 +15,8 @@ class Logspage extends Component {
     this.state = {
       "isLoaded":false,
       "redirectToLogin":false,
-      "logLines":[]
+      "logLines":[],
+      "MinerlogLines":[]
     };
 
   }
@@ -28,7 +29,7 @@ class Logspage extends Component {
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-    const { isLoaded, redirectToLogin,logLines } = this.state;
+    const { isLoaded, redirectToLogin,logLines,MinerlogLines } = this.state;
     var comp=this;
     function hasSuffix(s, suffix) {
       return s.substr(s.length - suffix.length) === suffix;
@@ -62,6 +63,37 @@ class Logspage extends Component {
          comp.setState({"logLines":logLines});
        }
      });
+    //  Miner Logs
+    chunkedRequest({
+      url: window.customVars.urlPrefix+window.customVars.apiMinerLogs,
+      method: 'GET',
+      headers: {'Authorization': 'Bearer ' + token},
+      chunkParser(bytes, state = {}, flush = false) 
+      {
+         if (!state.textDecoder) {
+           state.textDecoder = new TextDecoder();
+         }
+         const textDecoder = state.textDecoder;
+         const chunkStr = textDecoder.decode(bytes, { stream: !flush })
+         const lines = chunkStr.split("\n");
+
+         if (!flush && !hasSuffix(chunkStr, "\n")) {
+           state.trailer = lines.pop();
+         }
+
+         const linesObjects = lines
+           .filter(v => v.trim() !== '')
+           .map(v => v);
+
+         return [ linesObjects, state ];
+       },
+      onChunk(err, parsedChunk) {
+        parsedChunk.forEach(function(line)  {
+         MinerlogLines.push(line);
+        });
+        comp.setState({"MinerlogLines":MinerlogLines});
+      }
+    });
    }
 
   }
@@ -83,13 +115,25 @@ class Logspage extends Component {
           {/* Box  */}
            <div className="col-md-12 mt-5">
              <div className="box">
-               <div className="box-header">
-                 <h3>Miner Logs {!isLoaded && <div className="lds-dual-ring pull-right"></div>}</h3>
-               </div>
-
-               <LogBox lines={this.state.logLines} />
-
-
+                <div className="box-header">
+                  <h3>Logs {!isLoaded && <div className="lds-dual-ring pull-right"></div>}</h3>
+                </div>
+                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist" style={{padding:'0 5px 0 5px'}}>
+                  <li class="nav-item">
+                    <a class="nav-link active" id="sl-tab" data-toggle="tab" href="#sl" role="tab" aria-controls="sl" aria-selected="true">System</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="ml-tab" data-toggle="tab" href="#ml" role="tab" aria-controls="ml" aria-selected="false">Miner</a>
+                  </li>
+                </ul>
+                <div class="tab-content" id="pills-tabContent">
+                  <div class="tab-pane fade show active" id="sl" role="tabpanel" aria-labelledby="sl-tab">
+                    <LogBox lines={this.state.logLines} />
+                  </div>
+                  <div class="tab-pane fade" id="ml" role="tabpanel" aria-labelledby="ml-tab">
+                    <LogBox lines={this.state.MinerlogLines} />
+                  </div>
+                </div>
              </div>
            </div>
            {/* ./ Box  */}

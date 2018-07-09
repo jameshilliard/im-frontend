@@ -55,6 +55,8 @@ class App extends Component {
         apiConfigFreqVol: "/api/getFreqVol",
         //miner unit
         apiGetMinerUnit:"/api/unit",
+        //miner logs
+        apiMinerLogs:"/stream/minerlogs"
     };
   }
 
