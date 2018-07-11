@@ -311,12 +311,6 @@ class Poolspage extends Component {
               Some fields in your form are invalid, please check the fields highlighted in red.
             </div>
           }
-
-
-          <div className="alert alert-info mt-5">
-            Please ensure that your pools are compatible with stratum version-rolling extension
-          </div>
-
           <div className="row">
               {/* Box Pool 1 */}
              <div className="col-md-12 mt-5">
