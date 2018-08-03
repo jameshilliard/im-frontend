@@ -92,7 +92,7 @@ class Profilepage extends Component {
       this.setState({"redirectToLogin":true});
     } else {
 
-      if((sliderValue >=14 && window.confirm("IMPORTANT!!!\r\nYou are going to take the miner into overclock mode. This will of course result in a very high power-consumption.\r\nPlease ensure your power supply is enough and the cable could afford such high currency. Continue?")) || sliderValue < 14)
+      if((sliderValue >=14 && window.confirm("IMPORTANT!!!\r\nYou are going to turn the miner into overclocking mode, which will result in considerably high power consumption.\r\nPlease make sure that your power supply capability is enough and the cable could afford the currency load. \r\nContinue?")) || sliderValue < 14)
       {
         var mode="";
         var level="";
