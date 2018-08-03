@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import {generateUrlEncoded,getStorage,deleteStorage} from '../lib/utils'
+import {generateUrlEncoded,getStorage,deleteStorage,getModeAndLevel,getAutoTuneValue,showLevel,showMode} from '../lib/utils'
 import { Redirect, Link } from 'react-router-dom';
 import 'react-rangeslider/lib/index.css'
 import Slider from 'react-rangeslider'
@@ -19,7 +19,9 @@ class Profilepage extends Component {
       "isTuning": false,
       "redirectToLogin": false,
       "saving": false,
-      "formChanged": false
+      "formChanged": false,
+      "actualLevel": "",
+      "chosenMode":"",
     };
     this.handleSubmit = this.handleSubmit.bind(this);
   }
@@ -51,26 +53,16 @@ class Profilepage extends Component {
         axios.post(window.customVars.urlPrefix+window.customVars.apiGetAutoTuneStatus,postData,axiosConfig)
         .then(res => {
           if (res.data.success === true) {
-            if (this.state.actualMode==="") {
+            if (this.state.actualMode==="") 
+            {
               var sliderValue;
-              switch (res.data.mode) {
-                case "efficient":
-                  sliderValue=1;
-                  break;
-                case "balanced":
-                  sliderValue=2;
-                  break;
-                case "factory":
-                  sliderValue=3;
-                  break;
-                case "performance":
-                  sliderValue=4;
-                  break;
-                default:
-              }
-              page.setState({"isLoaded":true,"actualMode":res.data.mode,"sliderValue":sliderValue,"sliderValueSetted":sliderValue,"isRunning":res.data.isRunning,"isTuning":res.data.isTuning});
-            } else {
-              page.setState({"actualMode":res.data.mode,"isRunning":res.data.isRunning,"isTuning":res.data.isTuning});
+              sliderValue = getAutoTuneValue(res.data.mode,res.data.level);
+
+              page.setState({"isLoaded":true,"actualMode":res.data.mode,"sliderValue":sliderValue,"sliderValueSetted":sliderValue,"isRunning":res.data.isRunning,"isTuning":res.data.isTuning,"actualLevel":res.data.level});
+            } 
+            else 
+            {
+              page.setState({"actualMode":res.data.mode,"isRunning":res.data.isRunning,"isTuning":res.data.isTuning,"actualLevel":res.data.level});
             }
             page.timeOutStatus=setTimeout(() => {
               page.checkStatus();
@@ -90,7 +82,8 @@ class Profilepage extends Component {
   }
 
 
-  handleSubmit(event) {
+  handleSubmit(event) 
+  {
     var { sliderValue } = this.state;
     event.preventDefault();
     var token=getStorage("jwt");
@@ -99,47 +92,44 @@ class Profilepage extends Component {
       this.setState({"redirectToLogin":true});
     } else {
 
-      var mode="";
-      switch (sliderValue) {
-        case 1:
-          mode="efficient";
-          break;
-        case 2:
-          mode="balanced"
-          break;
-        case 3:
-          mode="factory";
-          break;
-        case 4:
-          mode="performance"
-          break;
-        default:
-      }
+      if((sliderValue >=14 && window.confirm("IMPORTANT!!!\r\nYou are going to take the miner into overclock mode. This will of course result in a very high power-consumption.\r\nPlease ensure your power supply is enough and the cable could afford such high currency. Continue?")) || sliderValue < 14)
+      {
+        var mode="";
+        var level="";
+        var modeandlevel = getModeAndLevel(sliderValue);
 
-      var params = new URLSearchParams();
-      params.append('autotune', mode);
-      let axiosConfig = {
-        headers: {
-            'Authorization': 'Bearer ' + token
+        if(modeandlevel)
+        {
+          mode = modeandlevel.mode;
+          level = modeandlevel.level;
         }
-      };
-      this.setState({"saving":true});
-      axios.post(window.customVars.urlPrefix+window.customVars.apiSetAutoTune,params,axiosConfig)
-      .then(res => {
-        if (res.data.success === true) {
-          this.setState({"saving":false,"saved":true,"sliderValueSetted":sliderValue,"formChanged":false,"actualMode":mode,"isRunning":true,"isTuning":true});
-        } else {
-          if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
-              deleteStorage("jwt");
-              page.setState({"redirectToLogin":true});
+
+        var params = new URLSearchParams();
+        params.append('autotune', mode);
+        params.append('level', level);
+        let axiosConfig = {
+          headers: {
+              'Authorization': 'Bearer ' + token
+          }
+        };
+        this.setState({"saving":true});
+        axios.post(window.customVars.urlPrefix+window.customVars.apiSetAutoTune,params,axiosConfig)
+        .then(res => {
+          if (res.data.success === true) {
+            this.setState({"saving":false,"saved":true,"sliderValueSetted":sliderValue,"formChanged":false,"actualMode":mode,"isRunning":true,"isTuning":true,"actualLevel":level});
+          } else {
+            if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
+                deleteStorage("jwt");
+                page.setState({"redirectToLogin":true});
+            }
+
           }
 
+          })
+          .catch(function (error) {
+
+          });
         }
-
-        })
-        .catch(function (error) {
-
-        });
     }
   }
 
@@ -152,7 +142,7 @@ class Profilepage extends Component {
   }
 
   render() {
-    var { alertMessage,isLoaded,sliderValue,redirectToLogin,saving,formChanged,saved,actualMode,isRunning,isTuning } = this.state;
+    var { alertMessage,isLoaded,sliderValue,redirectToLogin,saving,formChanged,saved,actualMode,isRunning,isTuning,actualLevel } = this.state;
 
 
 
@@ -162,10 +152,28 @@ class Profilepage extends Component {
     }
 
     const horizontalLabels = {
-      1: 'Efficiency',
-      2: 'Balanced',
-      3: 'Factory',
-      4: 'Performance'
+      1:  'Efficiency',
+      2:  '',
+      3:  '',
+      4:  '',
+      5:  '',
+      6:  'Balanced',
+      7:  '',
+      8:  '',
+      9:  '',
+      10: '',
+      11: 'Factory',
+      12: '',
+      13: '',
+      14: '',
+      15: '',
+      16: 'Performance',
+      17: ''
+    }
+
+    const format = value => 
+    {
+      return showMode(value);
     }
 
     return (
@@ -206,7 +214,7 @@ class Profilepage extends Component {
 
                         <Slider
                           min={1}
-                          max={4}
+                          max={17}
                           value={0}
                           tooltip={false}
                           value={sliderValue}
@@ -215,6 +223,9 @@ class Profilepage extends Component {
                           className="mr-5 ml-5"
                         />
                         <br />
+                        {format(sliderValue)&&
+                        <div className='slider_value_show'>Chosen Mode : {format(sliderValue)}</div>
+                        }
                         <h5 className="color-title mt-5">Tuning Status</h5>
 
                         <div className="row mt-3 text-left">
@@ -222,7 +233,7 @@ class Profilepage extends Component {
                                 <span className="field-title">Current Mode</span>
                             </div>
                             <div className="col-md-9 field-value">
-                                {actualMode}
+                                {actualMode + showLevel(actualLevel)}
                             </div>
                         </div>
                         <div className="row mt-3 text-left">

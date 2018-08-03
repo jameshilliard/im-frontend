@@ -654,3 +654,54 @@ input:checked + .slider:before {
   font-family: monospace;
   font-size: 10px;
 }
+
+/* ---------------------------------------------------
+   range slider
+----------------------------------------------------- */
+.rangeslider__label-item::before
+{
+    content: ' ';
+    position: absolute;
+    width: 7px;
+    height: 15px;
+    top: -23px;
+    left: -5px;
+    background-color: #FFF;
+    border:1px solid #b4afaf;
+}
+
+.rangeslider__label-item[data-value="1"]::before,.rangeslider__label-item[data-value="6"]::before,.rangeslider__label-item[data-value="11"]::before,.rangeslider__label-item[data-value="16"]::before
+{
+    content: ' ';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    top: -24px;
+    left: 20px;
+    border-radius:50%;
+    background-color: #FFF;
+    border:1px solid #b4afaf;
+}
+
+
+.rangeslider__label-item[data-value="11"]::before
+{
+    left:16px;
+}
+
+
+.rangeslider__label-item[data-value="16"]::before
+{
+    left:28px;
+}
+
+.rangeslider__handle
+{
+    z-index: 1;
+}
+
+.slider_value_show
+{
+    text-align: center;
+    font-size:14px;
+}

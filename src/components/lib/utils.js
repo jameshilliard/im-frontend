@@ -127,3 +127,225 @@ export function generateUrlEncoded(fields) {
   });
   return formBody.join("&");
 }
+
+export function getModeAndLevel(value)
+{
+  var return_info = {};
+  var level_list = ["2","3","4","0","1","2","3","4","0","1","2","3","4","0","1","2","3"];
+  var mode = "";
+  var level = level_list[parseInt(value) - 1];
+  switch (value) 
+  {
+    case 1:
+    case 2:
+    case 3:
+      mode="efficient";
+      break;
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+      mode="balanced";
+      break;
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+      mode="factory";
+      break;
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+      mode="performance"
+      break;
+    default:
+  }
+  return_info['mode'] = mode;
+  return_info['level'] = level;
+  return return_info;
+}
+
+export function getAutoTuneValue(mode,level)
+{
+  var return_value;
+  switch (mode) 
+  {
+    case "efficient":
+      switch(level)
+      {
+        case "2":
+         return_value = "1";
+         break;
+        case "3":
+          return_value = "2";
+          break;
+        case "4":
+          return_value = "3";
+          break;
+        default:
+          return_value = "1";
+          break;
+      }
+      break;
+    case "balanced":
+      switch(level)
+      {
+        case "0":
+          return_value = "4";
+          break;
+        case "1":
+          return_value = "5";
+          break;
+        case "2":
+          return_value = "6";
+          break;
+        case "3":
+          return_value = "7";
+          break;
+        case "4":
+          return_value = "8";
+          break;
+        default:
+          return_value = "6";
+          break;
+      }
+      break;
+    case "factory":
+      switch(level)
+      {
+        case "0":
+          return_value = "9";
+          break;
+        case "1":
+          return_value = "10";
+          break;
+        case "2":
+          return_value = "11";
+          break;
+        case "3":
+          return_value = "12";
+          break;
+        case "4":
+          return_value = "13";
+          break;
+        default:
+          return_value = "11";
+          break;
+      }
+      break;
+    case "performance":
+      switch(level)
+      {
+        case "0":
+          return_value = "14";
+          break;
+        case "1":
+          return_value = "15";
+          break;
+        case "2":
+          return_value = "16";
+          break;
+        case "3":
+          return_value = "17";
+          break;
+        default:
+          return_value = "16";
+          break;
+      }
+      break;
+    default:
+  }
+
+  return return_value;
+}
+
+export function showLevel(val)
+{
+  var sw_val = parseInt(val) - 2;
+  var return_str = "";
+  switch(sw_val)
+  {
+    case -2:
+      return_str = " - -";
+      break;
+    case -1:
+      return_str = " -";
+      break;
+    case 0:
+      return_str = "";
+      break;
+    case 1:
+      return_str = "+";
+      break;
+    case 2:
+      return_str = "++";
+      break;
+    default:
+      return_str = "";
+      break;
+  }
+  return return_str;
+}
+
+export function showMode(val)
+{
+  var mode_str = "";
+  switch(val)
+  {
+    case 1:
+      mode_str="Efficiency";
+      break;
+    case 2:
+      mode_str="Efficiency+";
+      break;
+    case 3:
+      mode_str="Efficiency++";
+      break;
+    case 4:
+      mode_str="Balanced - -";
+      break;
+    case 5:
+      mode_str="Balanced -";
+      break;
+    case 6:
+      mode_str="Balanced";
+      break;
+    case 7:
+      mode_str="Balanced+";
+      break;
+    case 8:
+      mode_str="Balanced++";
+      break;
+    case 9:
+      mode_str="Factory - -";
+      break;
+    case 10:
+      mode_str="Factory -";
+      break;
+    case 11:
+      mode_str="Factory";
+      break;
+    case 12:
+      mode_str="Factory+";
+      break;
+    case 13:
+      mode_str="Factory++";
+      break;
+    case 14:
+      mode_str="Performance - -";
+      break;
+    case 15:
+      mode_str="Performance -";
+      break;
+    case 16:
+      mode_str="Performance";
+      break;
+    case 17:
+      mode_str="Performance+";
+      break;
+  }
+  return mode_str;
+}
