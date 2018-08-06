@@ -160,7 +160,6 @@ class Securitypage extends Component {
                          <div className="col-sm-10">
                              <select ref="user" className="form-control form-control-sm" id="inputUser">
                                 <option value="admin">admin</option>
-                                <option value="guest">guest</option>
                              </select>
                          </div>
                      </div>
