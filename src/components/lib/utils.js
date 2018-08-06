@@ -349,3 +349,25 @@ export function showMode(val)
   }
   return mode_str;
 }
+
+export function StandardMode(str)
+{
+  var standardmode = "";
+  switch (str) 
+  {
+    case "efficient":
+      standardmode = "Efficiency";
+      break;
+    case "balanced":
+      standardmode = "Balanced";
+      break;
+    case "factory":
+      standardmode = "Factory";
+      break;
+    case "performance":
+    standardmode = "Performance";
+      break;
+    default:
+  }
+  return standardmode;
+}

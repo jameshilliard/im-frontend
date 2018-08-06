@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-import {generateUrlEncoded,getStorage,deleteStorage,getModeAndLevel,getAutoTuneValue,showLevel,showMode} from '../lib/utils'
+import {generateUrlEncoded,getStorage,deleteStorage,getModeAndLevel,getAutoTuneValue,showLevel,showMode,StandardMode} from '../lib/utils'
 import { Redirect, Link } from 'react-router-dom';
 import 'react-rangeslider/lib/index.css'
 import Slider from 'react-rangeslider'
@@ -233,7 +233,7 @@ class Profilepage extends Component {
                                 <span className="field-title">Current Mode</span>
                             </div>
                             <div className="col-md-9 field-value">
-                                {actualMode + showLevel(actualLevel)}
+                                {StandardMode(actualMode) + showLevel(actualLevel)}
                             </div>
                         </div>
                         <div className="row mt-3 text-left">
