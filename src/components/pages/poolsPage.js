@@ -46,6 +46,7 @@ class Poolspage extends Component {
       type: "",
       poolsUpdated:false,
       errorUpdating:false,
+      errorLock:false,
       redirectToLogin:false,
       hasErrors:false
     };
@@ -252,13 +253,23 @@ class Poolspage extends Component {
               };
               axios.post(window.customVars.urlPrefix+window.customVars.apiUpdatePools, strSend,axiosConfig)
               .then(function (response) {
-                if(response.data.success === true){
-                    comp.setState({poolsUpdated:true});
+                if(response.data.success === true)
+                {
+                    if(response.data.message == 'lock')
+                    {
+                      comp.setState({errorLock:true,poolsUpdated:true});
+                    }
+                    else
+                    {
+                      comp.setState({poolsUpdated:true});
+                    }
+                    
                     setTimeout(() => {
                       comp.setState({redirectToIndex:true});
                     }, 5000);
-                } else if(response.data.success === true) {
-                  comp.setState({errorUpdating:true,updatingPools:false});
+                } else if(response.data.success === false) 
+                {
+                  comp.setState({errorUpdating:true,updatingPools:false});                  
                 }
               })
               .catch(function (error) {
@@ -273,7 +284,7 @@ class Poolspage extends Component {
 
 
   render() {
-    const { pools,fieldsValidation,isLoaded,showAlert,updatingPools,redirectToIndex,type,poolsUpdated,errorUpdating,redirectToLogin,hasErrors } = this.state;
+    const { pools,fieldsValidation,isLoaded,showAlert,updatingPools,redirectToIndex,type,poolsUpdated,errorUpdating,errorLock,redirectToLogin,hasErrors } = this.state;
     if (redirectToIndex) {
       return <Redirect to="/?restarting" />;
     }
@@ -303,6 +314,12 @@ class Poolspage extends Component {
           {errorUpdating &&
             <div className="alert alert-warning mt-5">
               It was not possible to restart the service, please restart the miner manually
+            </div>
+          }
+
+          {errorLock &&
+            <div className="alert alert-warning mt-5">
+              Notice: currently using fixed pool setting.
             </div>
           }
 
