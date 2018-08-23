@@ -319,7 +319,7 @@ class Poolspage extends Component {
 
           {errorLock &&
             <div className="alert alert-warning mt-5">
-              Notice: currently using fixed pool setting.
+              Notice: currently using fixed pool setting, only worker’s suffix can be modified!
             </div>
           }
 
