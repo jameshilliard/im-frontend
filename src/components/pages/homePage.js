@@ -593,7 +593,7 @@ class Homepage extends Component {
                           <h4 className="modal-title" id="myModalLabel">Update reminding</h4>
                           <button type="button" className="close" data-dismiss="modal" aria-label="Close"
                                   onClick={this.closeDialog}>
-                              <span aria-hidden="true">¡Á</span>
+                              <span aria-hidden="true">X</span>
                           </button>
                       </div>
                       <div className="modal-body">
