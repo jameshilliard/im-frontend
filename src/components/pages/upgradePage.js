@@ -31,12 +31,17 @@ class Upgradepage extends Component {
         checkingLatestFirmware: false,
         latestFirmware: null,
         errorCheckingLatestFirmware: "",
-        type: "upload"
+        type: "upload",
+        firmwareNotExist:false,
+        restarting:false,
+        restarted:false,
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.upgradeFromUrl = this.upgradeFromUrl.bind(this);
     this.checkLatestFirmware = this.checkLatestFirmware.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.restartSwupdate = this.restartSwupdate.bind(this);
+
   }
 
   componentWillUnmount() {
@@ -232,6 +237,47 @@ class Upgradepage extends Component {
     this.upgrade("upload");
     this.setState({"type":"upload"});
   }
+    restartSwupdate()
+    {
+        this.setState({"restarting":true});
+        var page=this;
+        var token=getStorage("jwt");
+        if (token===null)
+        {
+            this.setState({"redirectToLogin":true});
+        }
+        else
+        {
+            var postData = {
+
+            };
+            let axiosConfig = {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            };
+            axios.post(window.customVars.urlPrefix+window.customVars.apiRestartSwupdate,postData,axiosConfig)
+                .then(res => {
+                    if (res.data.success)
+                    {
+                        this.setState({"restarting":false,"restarted":true});
+                    }
+                    else
+                    {
+                        if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired")
+                        {
+                            deleteStorage("jwt");
+                            window.location.reload();
+                        }
+                    }
+
+                })
+                .catch(function (error)
+                {
+
+                });
+        }
+    }
 
   checkMiner() {
     var page=this;
@@ -282,12 +328,13 @@ class Upgradepage extends Component {
       var postData = {
 
       };
+      var strSend = generateUrlEncoded({"type":"latest"});
       let axiosConfig = {
         headers: {
             'Authorization': 'Bearer ' + token
         }
       };
-      axios.post(window.customVars.urlPrefix+window.customVars.apiLatestFirmwareVersion,postData,axiosConfig)
+      axios.post(window.customVars.urlPrefix+window.customVars.apiLatestFirmwareVersion,strSend,axiosConfig)
       .then(res => {
           if (res.data.success) {
             var latestFirmware={
@@ -300,7 +347,12 @@ class Upgradepage extends Component {
               "isUpdated":res.data.isUpdated
             };
             this.setState({"latestFirmware":latestFirmware,"checkingLatestFirmware":false});
-          } else {
+          }
+          else if(res.data.success === false)
+          {
+              this.setState({"firmwareNotExist":true,"checkingLatestFirmware":false})
+          }
+          else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
                 this.setState({"redirectToLogin":true});
@@ -341,7 +393,10 @@ class Upgradepage extends Component {
       checkingLatestFirmware,
       latestFirmware,
       errorCheckingLatestFirmware,
-      type
+      type,
+      firmwareNotExist,
+      restarting,
+      restarted
      } = this.state;
 
     if (redirectToIndex) {
@@ -384,6 +439,11 @@ class Upgradepage extends Component {
                                 {errorMessage}
                                </div>
                               }
+                               {restarted &&
+                               <div className="alert alert-warning">
+                                    <span>The Upgrader has been reset successfully!</span>
+                               </div>
+                               }
                            </div>
                            }
 
@@ -467,6 +527,7 @@ class Upgradepage extends Component {
                    {!upgraded &&
                    <div className="box-footer">
                        <button disabled={upgrading} className="btn btn-primary" onClick={this.handleSubmit}>Upgrade Now {upgrading && <div className="btn-loader lds-dual-ring"></div>}</button>
+                       <button disabled={restarting} className="btn btn-primary ml-3 float-right" onClick={this.restartSwupdate}>Reset Upgrader {restarting && <div className="btn-loader lds-dual-ring"></div>}</button>
                    </div>
                    }
 
@@ -531,6 +592,14 @@ class Upgradepage extends Component {
                           </div>
                         }
                     </div>
+                   }
+
+                   {firmwareNotExist &&
+                       <div>
+                           <div className="alert alert-info">
+                               No updates available
+                           </div>
+                       </div>
                    }
 
                    {errorCheckingLatestFirmware &&

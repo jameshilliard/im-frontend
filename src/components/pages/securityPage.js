@@ -67,7 +67,7 @@ class Securitypage extends Component {
             alertMessage="";
             if(currentPassword.length === ""){
                 alertMessage="The current password can't be empty";
-            }else if(newPassword.length <= 6){
+            }else if(newPassword.length < 6){
                 alertMessage="The new password should have at least 6 characters";
             }else if(currentPassword === newPassword){
                 alertMessage="The new password should be different that the current password";

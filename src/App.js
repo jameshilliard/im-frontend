@@ -56,7 +56,25 @@ class App extends Component {
         //miner unit
         apiGetMinerUnit:"/api/unit",
         //miner logs
-        apiMinerLogs:"/stream/minerlogs"
+        apiMinerLogs:"/stream/minerlogs",
+        //miner test
+        apiMinerTest:"/stream/minertest",
+        apiStartTest:"/api/starttest",
+        apiIsTestRun:"/api/istestrun",
+        apiStartCg:"/api/startcg",
+        apiUpdateFanspeed:"/api/updateFanspeed",
+        //miner diagnostics
+        apiGetError:"/api/getErrorDetail",
+        apiCheckGateWay:"/api/checkGateWay",
+        apiCheckDNS:"/api/checkDNS",
+        apiCheckUrl:"/api/checkUrl",
+        apiGetErrorManual:"/api/getErrorManual",
+        apiGetFacInfo:"/api/getFacInfo",
+        apiRestartSwupdate:"/api/restartSwupdate",
+        //pool test
+        apiStartTestingPool:"/api/TestingPool",
+        apiCheckPoolTest:"/api/checkPoolTest",
+        apiGetStatJSON:"/api/getStatJSON",
     };
   }
 

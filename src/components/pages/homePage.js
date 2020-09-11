@@ -31,13 +31,32 @@ class Homepage extends Component {
       "hashRatesTimes": [],
       "showGraph": false,
       "isTuning": false,
-      "minerunit":""
+      "minerunit":"",
+      "firmware_remind":false,
+      "download_url":"",
+      "current_version":"",
+      "latest_version":""
     };
-
+      this.closeDialog = this.closeDialog.bind(this);
+      this.downloadFirmware = this.downloadFirmware.bind(this);
   }
-
+    closeDialog(event)
+    {
+        event.preventDefault();
+        setStorage("firmware_num",2);
+        this.setState({"firmware_remind":false});
+    }
+    downloadFirmware(event)
+    {
+        const{download_url} = this.state;
+        event.preventDefault();
+        setStorage("firmware_num",2);
+        const w = window.open('about:blank');
+        w.location.href=download_url;
+    }
 
   componentDidMount() {
+    this.firmware_check();
     this.loadInfo();
     this.loadHashRates();
   }
@@ -49,6 +68,53 @@ class Homepage extends Component {
       clearTimeout(this.timeOutLoad);
     if (typeof this.timeOutHashRates !== 'undefined')
       clearTimeout(this.timeOutHashRates);
+  }
+
+  firmware_check() 
+  {
+    var token=getStorage("jwt");
+    var firmware_num = getStorage("firmware_num");
+    if(firmware_num == 1)
+    {
+        if (token===null)
+        {
+            this.setState({"redirectToLogin":true});
+        }
+        else
+        {
+            var page=this;
+            var postData = {
+
+            };
+            let axiosConfig = {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            };
+            axios.post(window.customVars.urlPrefix+window.customVars.apiLatestFirmwareVersion,postData,axiosConfig)
+                .then(res => {
+                    let data = res.data;
+                    if(data.success == true)
+                    {
+                        if(!data.isUpdated)
+                        {
+                            page.setState({"firmware_remind":true,"current_version":data.currentVersion,"latest_version":data.version,"download_url":data.url});
+                        }
+
+                    }
+                })
+                .catch(function (error)
+                {
+                    page.timeOutLoad=setTimeout(() =>
+                    {
+                        page.firmware_check();
+                    }, 10000);
+                });
+
+        }
+    }
+
+
   }
 
   loadHashRates() {
@@ -237,8 +303,17 @@ class Homepage extends Component {
 
 
   render() {
-    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph,isTuning,minerunit } = this.state;
+    const { pools, chains, summary, isLoaded, isRestarting, isRebooting, redirectToLogin,hashRatesDataSets,hashRatesTimes,showGraph,isTuning,minerunit,firmware_remind,current_version,latest_version } = this.state;
 
+    let dialog_class = "modal fade";
+    let overlay_class="modal-backdrop fade";
+    let dialog_style = {};
+    if(firmware_remind)
+    {
+        dialog_class = "modal fade show";
+        overlay_class="modal-backdrop fade show";
+        dialog_style = {display:'block'};
+    }
     if (redirectToLogin) {
       return <Redirect to="/login?expired" />;
     }
@@ -474,7 +549,7 @@ class Homepage extends Component {
                         <th scope="col">#</th>
                         <th scope="col">Hash Rate</th>
                         <th scope="col">Status</th>
-                        <th scope="col">Accepted Rejected</th>
+                        <th scope="col">Accepted / Rejected</th>
                         <th scope="col">HW</th>
                         <th scope="col">Temperature</th>
                       </tr>
@@ -510,7 +585,40 @@ class Homepage extends Component {
           </div>
        </div>
        {/* Box Miner Info */}
-
+          {firmware_remind &&
+          <div className={dialog_class} style={dialog_style}>
+              <div className="modal-dialog">
+                  <div className="modal-content">
+                      <div className="modal-header">
+                          <h4 className="modal-title" id="myModalLabel">Update reminding</h4>
+                          <button type="button" className="close" data-dismiss="modal" aria-label="Close"
+                                  onClick={this.closeDialog}>
+                              <span aria-hidden="true">X</span>
+                          </button>
+                      </div>
+                      <div className="modal-body">
+                          <div className="container">
+                              <div className="row">
+                                  <div className="col"><strong>Current Version:</strong> </div>
+                                  <div className="col"><span>{current_version}</span></div>
+                                  <div className="w-100"></div>
+                                  <div className="col"><strong>Latest Version:</strong></div>
+                                  <div className="col"><span>{latest_version}</span></div>
+                              </div>
+                          </div>
+                      </div>
+                      <div className="modal-footer">
+                          <button type="button" className="btn btn-secondary" data-dismiss="modal"
+                                  onClick={this.closeDialog}>Close
+                          </button>
+                          <button type="button" className="btn btn-primary" onClick={this.downloadFirmware}>Download Firmware
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          }
+          {firmware_remind && <div className={overlay_class}></div>}
       </div>
     );
   }

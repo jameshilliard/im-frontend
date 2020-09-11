@@ -21,8 +21,13 @@ import Resetpage from '../../components/pages/resetPage';
 import Profilepage from '../../components/pages/profilePage';
 import DebugPage from '../../components/pages/debugPage';
 import LogsPage from '../../components/pages/logsPage';
+import MinerLogsPage from '../../components/pages/minerlogsPage';
+import MinerTestPage from '../../components/pages/minertestPage';
+import Fanpage from '../../components/pages/fanPage';
 
 import FreqVolPage from '../../components/pages/freqvolPage';
+import DiagnosticsPage from '../../components/pages/diagnosticsPage';
+import ErrorcodePage from '../../components/pages/errorcodePage';
 class Wrapper extends Component {
 
   constructor(props) {
@@ -129,7 +134,6 @@ class Wrapper extends Component {
                                 <li><NavLink to="/upgrade" activeClassName="active">Firmware</NavLink></li>
                                 <li><NavLink to="/reboot" activeClassName="active">Reboot</NavLink></li>
                                 {isAdmin &&<li><NavLink to="/reset" activeClassName="active">Factory Reset</NavLink></li>}
-                                {isAdmin &&<li><NavLink to="/logs" activeClassName="active">Miner Logs</NavLink></li>}
                             </ul>)} />
                         </li>}
                         <li><NavLink to="/overview" activeClassName="active"><i className="fa fa-microchip"></i>&nbsp;&nbsp; Overview</NavLink></li>
@@ -172,8 +176,13 @@ class Wrapper extends Component {
                         <Route exact path='/overview' component={OverViewpage} />
                         <Route exact path='/reset' component={Resetpage} />
                         <Route exact path='/profile' component={Profilepage} />
-                        <Route exact path='/debug' component={DebugPage} />
+                        <Route exact path='/stat' component={DebugPage} />
                         <Route exact path='/logs' component={LogsPage} />
+                        <Route exact path='/mlogs' component={MinerLogsPage} />
+                        <Route exact path='/mtest' component={MinerTestPage} />
+                        <Route exact path='/fan' component={Fanpage} />
+                        {/* <Route exact path='/diag' component={DiagnosticsPage} /> */}
+                        <Route exact path='/error' component={ErrorcodePage} />
                         {/* <Route exact path='/tuning' component={FreqVolPage} /> */}
                     </div>
                     {/* ./ Page content */}

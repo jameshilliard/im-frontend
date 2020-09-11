@@ -7,7 +7,7 @@ import {
   Redirect
 } from 'react-router-dom';
 
-class Logspage extends Component {
+class MinerLogspage extends Component {
 
   constructor(props) {
     super(props);
@@ -15,7 +15,7 @@ class Logspage extends Component {
     this.state = {
       "isLoaded":false,
       "redirectToLogin":false,
-      "logLines":[],
+      "MinerlogLines":[]
     };
 
   }
@@ -28,40 +28,43 @@ class Logspage extends Component {
     if (token===null) {
       this.setState({"redirectToLogin":true});
     } else {
-    const { isLoaded, redirectToLogin,logLines } = this.state;
+    const { isLoaded, redirectToLogin,MinerlogLines } = this.state;
     var comp=this;
     function hasSuffix(s, suffix) {
       return s.substr(s.length - suffix.length) === suffix;
     }
+
+    //  Miner Logs
     chunkedRequest({
-       url: window.customVars.urlPrefix+window.customVars.apiStreamLogs,
-       method: 'GET',
-       headers: {'Authorization': 'Bearer ' + token},
-       chunkParser(bytes, state = {}, flush = false) {
-          if (!state.textDecoder) {
-            state.textDecoder = new TextDecoder();
-          }
-          const textDecoder = state.textDecoder;
-          const chunkStr = textDecoder.decode(bytes, { stream: !flush })
-          const lines = chunkStr.split("\n");
+      url: window.customVars.urlPrefix+window.customVars.apiMinerLogs,
+      method: 'GET',
+      headers: {'Authorization': 'Bearer ' + token},
+      chunkParser(bytes, state = {}, flush = false) 
+      {
+         if (!state.textDecoder) {
+           state.textDecoder = new TextDecoder();
+         }
+         const textDecoder = state.textDecoder;
+         const chunkStr = textDecoder.decode(bytes, { stream: !flush })
+         const lines = chunkStr.split("\n");
 
-          if (!flush && !hasSuffix(chunkStr, "\n")) {
-            state.trailer = lines.pop();
-          }
+         if (!flush && !hasSuffix(chunkStr, "\n")) {
+           state.trailer = lines.pop();
+         }
 
-          const linesObjects = lines
-            .filter(v => v.trim() !== '')
-            .map(v => v);
+         const linesObjects = lines
+           .filter(v => v.trim() !== '')
+           .map(v => v);
 
-          return [ linesObjects, state ];
-        },
-       onChunk(err, parsedChunk) {
-         parsedChunk.forEach(function(line)  {
-          logLines.push(line);
-         });
-         comp.setState({"logLines":logLines});
-       }
-     });
+         return [ linesObjects, state ];
+       },
+      onChunk(err, parsedChunk) {
+        parsedChunk.forEach(function(line)  {
+         MinerlogLines.push(line);
+        });
+        comp.setState({"MinerlogLines":MinerlogLines});
+      }
+    });
    }
 
   }
@@ -76,7 +79,7 @@ class Logspage extends Component {
     return (
       <div className="Logspage">
 
-      <h1>Debug<br/><small>System Logs</small></h1>
+      <h1>Debug<br/><small>Miner Logs</small></h1>
 
       <div className="row">
 
@@ -84,9 +87,9 @@ class Logspage extends Component {
            <div className="col-md-12 mt-5">
              <div className="box">
                 <div className="box-header">
-                  <h3>System Logs {!isLoaded && <div className="lds-dual-ring pull-right"></div>}</h3>
+                  <h3>Miner Logs {!isLoaded && <div className="lds-dual-ring pull-right"></div>}</h3>
                 </div>
-                 <LogBox lines={this.state.logLines} />
+                 <LogBox lines={this.state.MinerlogLines} />
              </div>
            </div>
            {/* ./ Box  */}
@@ -126,4 +129,4 @@ componentDidUpdate(prevProps) {
   }
 };
 
-export default Logspage;
+export default MinerLogspage;

@@ -19,7 +19,6 @@ class Profilepage extends Component {
       "isTuning": false,
       "redirectToLogin": false,
       "saving": false,
-      "formChanged": false,
       "actualLevel": "",
       "chosenMode":"",
     };
@@ -33,7 +32,8 @@ class Profilepage extends Component {
   }
 
   componentDidMount() {
-    this.checkStatus();
+      document.getElementsByClassName("rangeslider__handle")[0].style.display="none";
+      this.checkStatus();
   }
 
   checkStatus() {
@@ -52,6 +52,7 @@ class Profilepage extends Component {
         };
         axios.post(window.customVars.urlPrefix+window.customVars.apiGetAutoTuneStatus,postData,axiosConfig)
         .then(res => {
+          document.getElementsByClassName("rangeslider__handle")[0].style.display="";
           if (res.data.success === true) {
             if (this.state.actualMode==="") 
             {
@@ -116,7 +117,7 @@ class Profilepage extends Component {
         axios.post(window.customVars.urlPrefix+window.customVars.apiSetAutoTune,params,axiosConfig)
         .then(res => {
           if (res.data.success === true) {
-            this.setState({"saving":false,"saved":true,"sliderValueSetted":sliderValue,"formChanged":false,"actualMode":mode,"isRunning":true,"isTuning":true,"actualLevel":level});
+            this.setState({"saving":false,"saved":true,"sliderValueSetted":sliderValue,"actualMode":mode,"isRunning":true,"isTuning":true,"actualLevel":level});
           } else {
             if ((typeof res.data.token !== 'undefined')&&res.data.token!==null&&res.data.token==="expired") {
                 deleteStorage("jwt");
@@ -137,12 +138,11 @@ class Profilepage extends Component {
   handleChange = (value) => {
     this.setState({
       sliderValue: value,
-      formChanged: (value!=this.state.sliderValueSetted)
     })
   }
 
   render() {
-    var { alertMessage,isLoaded,sliderValue,redirectToLogin,saving,formChanged,saved,actualMode,isRunning,isTuning,actualLevel } = this.state;
+    var { alertMessage,isLoaded,sliderValue,redirectToLogin,saving,saved,actualMode,isRunning,isTuning,actualLevel } = this.state;
 
 
 
@@ -233,7 +233,7 @@ class Profilepage extends Component {
                                 <span className="field-title">Current Mode</span>
                             </div>
                             <div className="col-md-9 field-value">
-                                {StandardMode(actualMode) + showLevel(actualLevel)}
+                                {StandardMode(actualMode) + showLevel(actualMode,actualLevel)}
                             </div>
                         </div>
                         <div className="row mt-3 text-left">
@@ -252,7 +252,7 @@ class Profilepage extends Component {
 
                  </div>
                  <div className="box-footer">
-                      <button disabled={!formChanged||saving} className="btn btn-primary" onClick={this.handleSubmit}>Save {saving && <div className="btn-loader lds-dual-ring"></div>}</button>
+                      <button disabled={saving} className="btn btn-primary" onClick={this.handleSubmit}>Save {saving && <div className="btn-loader lds-dual-ring"></div>}</button>
                  </div>
            </div>
          </div>

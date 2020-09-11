@@ -46,6 +46,7 @@ class Loginpage extends Component {
         if(response.data.success === true){
           setStorage("jwt",response.data.jwt);
           setStorage("userName",username);
+          setStorage("firmware_num",1);
           comp.setState({"isLogged":true});
         } else {
           comp.setState({"isLoggin":false,"error":response.data.message});
