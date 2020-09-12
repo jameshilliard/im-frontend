@@ -8,7 +8,7 @@ class DiagnosticsPage extends Component
     constructor(props)
     {
         super(props);
-        this.state = {
+        this.state = ({
             fac_info:[
                 "vendor":"",
                 "power_vendor": "",
@@ -19,7 +19,7 @@ class DiagnosticsPage extends Component
             NetCheckLoaded:false,
             net_check_detail:"",
             alertMessage:""
-        };
+        });
         this.check_gw = this.check_gw.bind(this);
         this.check_dns = this.check_dns.bind(this);
         this.check_url = this.check_url.bind(this);

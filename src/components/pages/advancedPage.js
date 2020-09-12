@@ -14,10 +14,10 @@ class Advancedpage extends Component {
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.autoTune = this.autoTune.bind(this);
-    this.state = {
+    this.state = ({
       isLoaded: false,
       redirectToIndex:false,
-      fields: [
+      "fields": [
       "Voltage": "",
       "vidmode": "",
       "Frequency": "",
@@ -28,7 +28,7 @@ class Advancedpage extends Component {
       "isAutoTuning":false,
       "defaultVoltage":"",
       "redirectToIndex":false
-    };
+    });
 
 
   }
